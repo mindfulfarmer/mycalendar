@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title>Chromatic Tuner</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#050505">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tuner">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        html, body {
+            /* Absolutely no scrolling */
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Dark Theme */
+            background: linear-gradient(135deg, #1a1a24, #0a0a0f, #050505);
+            background-size: 200% 200%;
+            background-position: 0% 50%;
+            color: #ffffff;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            padding: 15px 10px; 
+            box-sizing: border-box;
+            transition: background 0.5s ease;
+        }
+
+        /* Breathing Animation for Tuning State */
+        body.tuning-active {
+            animation: backgroundBreathe 6s ease-in-out infinite;
+        }
+
+        @keyframes backgroundBreathe {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Container filling the screen without card borders */
+        .glass-card {
+            width: 100%;
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            z-index: 1;
+            padding: 10px 0 20px 0;
+        }
+
+        /* Title Logo - Extra Small */
+        h1 { 
+            font-size: 0.65rem; 
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 700;
+            color: #6b7280;
+            cursor: pointer;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.8);
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* --- 1. Western Carousel (Taller Vertical Space) --- */
+        .carousel-container {
+            width: 100%;
+            flex-grow: 1; 
+            min-height: 250px;
+            max-height: 45vh;
+            position: relative;
+            background: transparent;
+            border-radius: 16px;
+            overflow: hidden;
+            mask-image: linear-gradient(to right, transparent, black 25%, black 75%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 25%, black 75%, transparent);
+            z-index: 1;
+        }
+
+        .carousel-highlight {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 140px; 
+            height: 70%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+        }
+
+        .carousel-track {
+            display: flex;
+            position: absolute;
+            left: 50%;
+            height: 100%;
+            align-items: center;
+            transition: transform 0.1s linear;
+            z-index: 2; 
+        }
+
+        .carousel-note {
+            width: 120px; 
+            text-align: center;
+            font-size: 3.2rem; 
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.15); 
+            transition: color 0.2s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            transform-origin: center center;
+        }
+
+        .sharp-sym {
+            font-size: 0.5em;
+            vertical-align: super;
+            margin-left: -2px;
+            opacity: 0.9;
+        }
+
+        .carousel-note sub {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-left: 4px;
+        }
+
+        /* Active Note States (Made Prominent) */
+        .carousel-note.active-default { color: #ffffff; transform: scale(2.1); text-shadow: 0 0 20px rgba(255, 255, 255, 0.2); vertical-align: baseline; }
+        .carousel-note.in-tune { color: #4ade80; transform: scale(1.8); text-shadow: 0 0 25px rgba(74, 222, 128, 0.5); z-index: 10; }
+        .carousel-note.in-tune sub { color: rgba(74, 222, 128, 0.9); }
+        .carousel-note.flat { color: #60a5fa; transform: scale(1.8); text-shadow: 0 0 25px rgba(96, 165, 250, 0.5); z-index: 10; }
+        .carousel-note.flat sub { color: rgba(96, 165, 250, 0.9); }
+        .carousel-note.sharp { color: #f87171; transform: scale(1.8); text-shadow: 0 0 25px rgba(248, 113, 113, 0.5); z-index: 10; }
+        .carousel-note.sharp sub { color: rgba(248, 113, 113, 0.9); }
+
+        /* --- 2. Accuracy Meter (Moved closer to Carousel, No edges) --- */
+        .tuning-meter-container {
+            width: 60%; 
+            margin: -15px auto 10px auto; /* Negative top margin pulls it closer */
+            z-index: 2; /* Ensures it stays visible above/below carousel */
+        }
+
+        .tuning-meter {
+            width: 100%;
+            height: 40px; 
+            /* Soft radial background fading smoothly into nothingness */
+            background: radial-gradient(ellipse,rgba(255,255,255,0.06) 10%, rgba(255,255,255,0) 60%);
+            position: relative;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .tuning-center-notch {
+            position: absolute;
+            left: 50%;
+            top: 20%;
+            width: 2px;
+            height: 60%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-50%);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .tuning-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 24px; 
+            border-radius: 12px; 
+            background: radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.7) 10%, rgba(200,200,200,0.2) 50%, rgba(0,0,0,0.3) 100%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%);
+            transition: left 0.1s linear, background 0.2s, box-shadow 0.2s;
+            z-index: 2;
+        }
+
+        .tuning-indicator.in-tune { 
+            background: radial-gradient(ellipse at 30% 30%, #a7f3d0 10%, #4ade80 50%, #065f46 100%);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.6);
+        }
+        .tuning-indicator.flat { 
+            background: radial-gradient(ellipse at 30% 30%, #bfdbfe 10%, #60a5fa 50%, #1e3a8a 100%);
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
+        }
+        .tuning-indicator.sharp { 
+            background: radial-gradient(ellipse at 30% 30%, #fecaca 10%, #f87171 50%, #7f1d1d 100%);
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.6);
+        }
+
+        /* --- 3. Grid Display for Indian Notation & Freq (Faded into Background) --- */
+        .note-display { 
+            width: 85%; 
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px; 
+            margin-bottom: 25px;
+            z-index: 2;
+        }
+        
+        #indian-note, #freq-display { 
+            /* Soft radial fade into main background, no borders/shadows */
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.06) 0%, transparent 80%);
+            background: none;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+            
+            height: 70px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #indian-note {
+            font-size: 1.5rem; 
+            font-weight: 500; 
+            gap: 6px;
+        }
+
+        .roman-script {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 400;
+        }
+
+        #freq-display { 
+            font-size: 1.3rem; 
+            opacity: 0.8;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums; 
+            letter-spacing: 1px;
+        }
+
+        .faded-default {
+            opacity: 0.2;
+        }
+
+        /* --- 4. Controls (Raised Tinted Glass Button) --- */
+        .glass-btn {
+            background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 15px 30px rgba(0,0,0,0.5), 
+                0 6px 10px rgba(0,0,0,0.4), 
+                inset 0 1px 2px rgba(255,255,255,0.2);
+                
+            padding: 20px 30px; 
+            font-size: 1.1rem;
+            color: #fff;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            max-width: 240px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .glass-btn:hover { 
+            background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04));
+            transform: translateY(-2px); 
+            box-shadow: 
+                0 20px 35px rgba(0,0,0,0.6), 
+                0 8px 15px rgba(0,0,0,0.5), 
+                inset 0 1px 2px rgba(255,255,255,0.3);
+        }
+        
+        .glass-btn:active { 
+            transform: translateY(4px); 
+            box-shadow: 
+                0 5px 10px rgba(0,0,0,0.4), 
+                inset 0 4px 8px rgba(0,0,0,0.2), 
+                inset 0 1px 2px rgba(255,255,255,0.1);
+        }
+        
+        .glass-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* --- 5. Modal Styling --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        .modal-content p {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: #d1d5db;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-content p:first-child {
+            font-style: italic;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="glass-card">
+        <h1 id="title-logo">Chromatic Tuner</h1>
+        
+        <div class="carousel-container">
+            <div id="carousel-highlight" class="carousel-highlight"></div>
+            <div id="carousel-track" class="carousel-track">
+            </div>
+        </div>
+
+        <div class="tuning-meter-container">
+            <div class="tuning-meter">
+                <div class="tuning-center-notch"></div>
+                <div id="tuning-indicator" class="tuning-indicator"></div>
+            </div>
+        </div>
+
+        <div class="note-display">
+            <div id="indian-note"></div>
+            <div id="freq-display"></div>
+        </div>
+
+        <button id="toggle-btn" class="glass-btn">
+            <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+            <span id="btn-text">Tune</span>
+        </button>
+    </main>
+
+    <div id="info-modal" class="modal-overlay">
+        <div class="modal-content">
+            <p>"For the love of music"</p>
+            <p>Designed by Bhaskarjyoti Das</p>
+            <p>Made in India 🇮🇳</p>
+        </div>
+    </div>
+
+    <script>
+        // --- User Settings & Permissions Management (PWA Local Storage) ---
+        const SETTINGS_KEY = 'chromaticTunerSettings';
+        let appSettings = { micPermissionGranted: false, lastUsed: null };
+
+        function loadSettings() {
+            try {
+                const stored = localStorage.getItem(SETTINGS_KEY);
+                if (stored) {
+                    appSettings = { ...appSettings, ...JSON.parse(stored) };
+                }
+            } catch (e) {
+                console.warn('Local Storage is not available or accessible.');
+            }
+        }
+
+        function saveSettings() {
+            try {
+                appSettings.lastUsed = new Date().toISOString();
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
+            } catch (e) {
+                console.warn('Failed to save settings to Local Storage.');
+            }
+        }
+
+        loadSettings(); // Initialize settings on load
+
+        // --- Modal Logic ---
+        const titleLogo = document.getElementById('title-logo');
+        const infoModal = document.getElementById('info-modal');
+
+        titleLogo.addEventListener('click', () => {
+            infoModal.classList.add('active');
+        });
+
+        infoModal.addEventListener('click', () => {
+            infoModal.classList.remove('active');
+        });
+
+        // --- Data Mapping ---
+        const westernNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const indianNotes = [
+            "सा <span class='roman-script'>(S)</span>", 
+            "रे॒ <span class='roman-script'>(r)</span>", 
+            "रे <span class='roman-script'>(R)</span>", 
+            "ग॒ <span class='roman-script'>(g)</span>", 
+            "ग <span class='roman-script'>(G)</span>", 
+            "म <span class='roman-script'>(m)</span>", 
+            "म॑ <span class='roman-script'>(M)</span>", 
+            "प <span class='roman-script'>(P)</span>", 
+            "ध॒ <span class='roman-script'>(d)</span>", 
+            "ध <span class='roman-script'>(D)</span>", 
+            "नि॒ <span class='roman-script'>(n)</span>", 
+            "नि <span class='roman-script'>(N)</span>"
+        ];
+
+        // --- Carousel Setup ---
+        const START_MIDI = 24; // C1
+        const END_MIDI = 108;  // C8
+        const NOTE_WIDTH = 120; 
+        const track = document.getElementById('carousel-track');
+        const highlightRegion = document.getElementById('carousel-highlight');
+
+        for (let i = START_MIDI; i <= END_MIDI; i++) {
+            const el = document.createElement('div');
+            el.className = 'carousel-note';
+            el.id = 'note-' + i;
+            
+            let noteName = westernNotes[i % 12];
+            if(noteName.includes('#')) {
+                noteName = noteName.replace('#', '<span class="sharp-sym">#</span>');
+            }
+
+            const octaveNumber = Math.floor(i / 12) - 1; 
+            el.innerHTML = `${noteName}<sub>${octaveNumber}</sub>`;
+            track.appendChild(el);
+        }
+
+        function resetUI() {
+            const defaultNote = 69; // A4
+            const offset = (defaultNote - START_MIDI) * NOTE_WIDTH + (NOTE_WIDTH / 2);
+            track.style.transform = `translateX(${-offset}px)`;
+            
+            document.querySelectorAll('.carousel-note').forEach(el => el.className = 'carousel-note');
+            
+            // Highlight default note A4 to show its big size
+            const defaultEl = document.getElementById('note-' + defaultNote);
+            if(defaultEl) defaultEl.classList.add('active-default');
+            
+            const indicator = document.getElementById('tuning-indicator');
+            indicator.style.left = '50%';
+            indicator.className = 'tuning-indicator';
+            
+            highlightRegion.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            highlightRegion.style.boxShadow = '0 0 30px rgba(0,0,0,0.6)';
+
+            // Faded default values
+            document.getElementById('indian-note').innerHTML = "<span class='faded-default'>सा <span class='roman-script'>(S)</span></span>";
+            document.getElementById('freq-display').innerHTML = "<span class='faded-default'>440.0 Hz</span>";
+        }
+        resetUI();
+
+        // --- Audio Context & Pitch Detection ---
+        let audioContext = null;
+        let analyser = null;
+        let mediaStreamSource = null;
+        let isTuning = false;
+        let animationId = null;
+
+        const toggleBtn = document.getElementById('toggle-btn');
+        const btnText = document.getElementById('btn-text');
+        const micIcon = document.getElementById('mic-icon');
+        const indianNoteEl = document.getElementById('indian-note');
+        const freqDisplayEl = document.getElementById('freq-display');
+        const tuningIndicator = document.getElementById('tuning-indicator');
+
+        function noteFromPitch(frequency) {
+            const noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
+            return Math.round(noteNum) + 69;
+        }
+
+        function frequencyFromNoteNumber(note) {
+            return 440 * Math.pow(2, (note - 69) / 12);
+        }
+
+        function centsOffFromPitch(frequency, note) {
+            return Math.floor(1200 * Math.log(frequency / frequencyFromNoteNumber(note)) / Math.log(2));
+        }
+
+        function autoCorrelate(buf, sampleRate) {
+            let SIZE = buf.length;
+            let rms = 0;
+
+            for (let i = 0; i < SIZE; i++) {
+                let val = buf[i];
+                rms += val * val;
+            }
+            rms = Math.sqrt(rms / SIZE);
+            if (rms < 0.01) return -1; 
+
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (let i = 0; i < SIZE / 2; i++)
+                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            for (let i = 1; i < SIZE / 2; i++)
+                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+
+            buf = buf.slice(r1, r2);
+            SIZE = buf.length;
+
+            let c = new Array(SIZE).fill(0);
+            for (let i = 0; i < SIZE; i++)
+                for (let j = 0; j < SIZE - i; j++)
+                    c[i] = c[i] + buf[j] * buf[j + i];
+
+            let d = 0; while (c[d] > c[d + 1]) d++;
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i < SIZE; i++) {
+                if (c[i] > maxval) {
+                    maxval = c[i];
+                    maxpos = i;
+                }
+            }
+            let T0 = maxpos;
+
+            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+            let a = (x1 + x3 - 2 * x2) / 2;
+            let b = (x3 - x1) / 2;
+            if (a) T0 = T0 - b / (2 * a);
+
+            return sampleRate / T0;
+        }
+
+        function updatePitch() {
+            const bufferLength = analyser.fftSize;
+            const buffer = new Float32Array(bufferLength);
+            analyser.getFloatTimeDomainData(buffer);
+            
+            const ac = autoCorrelate(buffer, audioContext.sampleRate);
+
+            if (ac !== -1) {
+                const pitch = ac;
+                let note = noteFromPitch(pitch);
+                
+                if (note < START_MIDI) note = START_MIDI;
+                if (note > END_MIDI) note = END_MIDI;
+
+                const noteIndex = note % 12;
+                const cents = centsOffFromPitch(pitch, note);
+
+                indianNoteEl.innerHTML = indianNotes[noteIndex];
+                freqDisplayEl.textContent = `${pitch.toFixed(1)} Hz`;
+
+                const N_continuous = (note - START_MIDI) + (cents / 100);
+                const translateX = -(N_continuous * NOTE_WIDTH + (NOTE_WIDTH / 2));
+                track.style.transform = `translateX(${translateX}px)`;
+
+                let meterPercent = 50 + (cents * 0.8); 
+                tuningIndicator.style.left = `${meterPercent}%`;
+
+                document.querySelectorAll('.carousel-note').forEach(el => el.className = 'carousel-note');
+                tuningIndicator.className = 'tuning-indicator'; 
+
+                const activeEl = document.getElementById('note-' + note);
+                
+                if (activeEl) {
+                    if (Math.abs(cents) <= 5) {
+                        activeEl.classList.add('in-tune');
+                        tuningIndicator.classList.add('in-tune');
+                        highlightRegion.style.borderColor = 'rgba(74, 222, 128, 0.5)';
+                        highlightRegion.style.boxShadow = '0 0 35px rgba(74, 222, 128, 0.25)';
+                    } else if (cents < -5) {
+                        activeEl.classList.add('flat');
+                        tuningIndicator.classList.add('flat');
+                        highlightRegion.style.borderColor = 'rgba(96, 165, 250, 0.4)';
+                        highlightRegion.style.boxShadow = '0 0 30px rgba(96, 165, 250, 0.2)';
+                    } else {
+                        activeEl.classList.add('sharp');
+                        tuningIndicator.classList.add('sharp');
+                        highlightRegion.style.borderColor = 'rgba(248, 113, 113, 0.4)';
+                        highlightRegion.style.boxShadow = '0 0 30px rgba(248, 113, 113, 0.2)';
+                    }
+                }
+            }
+
+            if (isTuning) {
+                animationId = requestAnimationFrame(updatePitch);
+            }
+        }
+
+        toggleBtn.addEventListener('click', async () => {
+            if (isTuning) {
+                isTuning = false;
+                cancelAnimationFrame(animationId);
+                if (mediaStreamSource) mediaStreamSource.disconnect();
+                
+                document.body.classList.remove('tuning-active');
+                btnText.textContent = 'Tune';
+                micIcon.style.color = 'currentColor'; 
+                resetUI();
+            } else {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    // User successfully granted mic permissions, save to local storage
+                    appSettings.micPermissionGranted = true;
+                    saveSettings();
+
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 2048;
+                    
+                    mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                    mediaStreamSource.connect(analyser);
+                    
+                    isTuning = true;
+                    document.body.classList.add('tuning-active');
+                    btnText.textContent = 'Stop Tuning';
+                    micIcon.style.color = '#f87171'; 
+                    
+                    updatePitch();
+                } catch (err) {
+                    // Update settings if user denied permission
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        appSettings.micPermissionGranted = false;
+                        saveSettings();
+                    }
+                    alert('Microphone access is required to tune your instrument. Please check your browser or system settings.');
+                    console.error('Mic error:', err);
+                }
+            }
+        });
+
+        // --- SW Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration skipped.'));
+            });
+        }
+    </script>
+</body>
+</html>
