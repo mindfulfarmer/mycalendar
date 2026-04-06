@@ -2,835 +2,890 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>My Calendar</title>
     
-    <title>Chromatic Tuner</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" type="image/png" href="icon-192.png">
     
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#050505">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tuner">
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="My Calendar">
 
     <style>
-        /* Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent; 
+        /* --- PANTONE BORDERLESS COLOR SCHEMES --- */
+        :root {
+            --bg-wallpaper: #E6F3FC; 
+            --glass-bg: #FFFFFF;
+            --cell-bg: #F0F7FD;
+            --modal-bg: #FFFFFF;
+            --text-primary: #002B49; 
+            --text-secondary: #005696;
+            
+            --accent-color: #0072CE; 
+            --accent-hover: #005AA3;
+            
+            --holiday-color: #E31837; 
+            --btn-bg: #E0EFFF;
+            --btn-hover: #CCE4FF;
+            --cell-hover: #E0EFFF;
+            
+            /* Distinct warm shade for weekends */
+            --weekend-bg: #FFF2D7; 
+            
+            --event-bg: rgba(204, 228, 255, 0.45); 
+            --holiday-bg: rgba(252, 232, 235, 0.45);
+            --drag-bg: rgba(0, 114, 206, 0.2);
         }
 
+        [data-theme="dark"] {
+            --bg-wallpaper: #000000;
+            --glass-bg: #0A0A0A;
+            --cell-bg: #141414;
+            --modal-bg: #111111;
+            --text-primary: #F0F0F0;
+            --text-secondary: #888888;
+            
+            --holiday-color: #FF3333;
+            --btn-bg: #222222;
+            --btn-hover: #333333;
+            --cell-hover: #1E1E1E;
+            
+            /* Distinct warm shade for weekends in dark mode */
+            --weekend-bg: rgba(255, 193, 7, 0.12); 
+            
+            --event-bg: rgba(0, 59, 111, 0.45);
+            --holiday-bg: rgba(74, 17, 17, 0.45);
+            --drag-bg: rgba(0, 114, 206, 0.3);
+        }
+
+        /* STRICT NO SCROLL GLOBALS & PWA ZOOM PREVENTION */
         html, body {
-            /* Enforce dark mode at the browser level */
-            color-scheme: dark; 
-            
-            /* Absolutely no scrolling */
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Dark Theme */
-            background: linear-gradient(135deg, #1a1a24, #0a0a0f, #050505);
-            background-size: 200% 200%;
-            background-position: 0% 50%;
-            color: #ffffff;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-            
-            /* Safe Area Padding for Mobile Devices (Notches, Gesture bars) */
-            padding: max(15px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(15px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-            
+            overflow: hidden !important; 
+            height: 100vh; width: 100vw; margin: 0; padding: 0;
             box-sizing: border-box;
-            transition: background 0.5s ease;
-        }
-
-        /* Breathing Animation for Tuning State */
-        body.tuning-active {
-            animation: backgroundBreathe 6s ease-in-out infinite;
-        }
-
-        @keyframes backgroundBreathe {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Container filling the screen without card borders */
-        .glass-card {
-            width: 100%;
-            height: 100%; 
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-            z-index: 1;
-            padding: 10px 0 20px 0;
-        }
-
-        /* Title Logo - Extra Small */
-        h1 { 
-            font-size: 0.65rem; 
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-weight: 700;
-            color: #6b7280;
-            cursor: pointer;
-            text-shadow: 0px 1px 2px rgba(0,0,0,0.8);
-            padding: 5px;
-            margin-bottom: 5px;
-        }
-
-        /* --- 1. Western Carousel (Taller Vertical Space) --- */
-        .carousel-container {
-            width: 100%;
-            flex-grow: 1; 
-            min-height: 250px;
-            max-height: 45vh;
-            position: relative;
-            background: transparent;
-            border-radius: 16px;
-            overflow: hidden;
-            mask-image: linear-gradient(to right, transparent, black 25%, black 75%, transparent);
-            -webkit-mask-image: linear-gradient(to right, transparent, black 25%, black 75%, transparent);
-            z-index: 1;
-        }
-
-        .carousel-highlight {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 210px; 
-            height: 70%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
-            transform: translate(-50%, -50%);
-            z-index: 1;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 30px rgba(0,0,0,0.6);
-            transition: all 0.3s ease;
-        }
-
-        .carousel-track {
-            display: flex;
-            position: absolute;
-            left: 50%;
-            height: 100%;
-            align-items: center;
-            transition: transform 0.1s linear;
-            z-index: 2; 
-        }
-
-        .carousel-note {
-            width: 120px; 
-            text-align: center;
-            font-size: 3.2rem; 
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.15); 
-            transition: color 0.2s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #111; /* Dark background for the area outside the app on desktop */
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased; letter-spacing: 0.015em;
+            touch-action: pan-x pan-y; /* Prevents double-tap/pinch zoom */
+            display: flex; /* Centers the app on desktop */
             justify-content: center;
-            align-items: baseline;
-            transform-origin: center center;
-        }
-
-        .sharp-sym {
-            font-size: 0.5em;
-            vertical-align: super;
-            margin-left: -2px;
-            opacity: 0.9;
-        }
-
-        .carousel-note sub {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.3);
-            margin-left: 4px;
-        }
-
-        /* Active Note States (Made Prominent) */
-        .carousel-note.active-default { color: #ffffff; transform: scale(2.4); text-shadow: 0 0 20px rgba(255, 255, 255, 0.2); vertical-align: baseline; }
-        .carousel-note.in-tune { color: #4ade80; transform: scale(2.4); text-shadow: 0 0 25px rgba(74, 222, 128, 0.5); z-index: 10; }
-        .carousel-note.in-tune sub { color: rgba(74, 222, 128, 0.9); }
-        .carousel-note.flat { color: #60a5fa; transform: scale(2.2); text-shadow: 0 0 25px rgba(96, 165, 250, 0.5); z-index: 10; }
-        .carousel-note.flat sub { color: rgba(96, 165, 250, 0.9); }
-        .carousel-note.sharp { color: #f87171; transform: scale(2.2); text-shadow: 0 0 25px rgba(248, 113, 113, 0.5); z-index: 10; }
-        .carousel-note.sharp sub { color: rgba(248, 113, 113, 0.9); }
-
-        /* --- 2. Accuracy Meter (Moved closer to Carousel, No edges) --- */
-        .tuning-meter-container {
-            width: 60%; 
-            margin: -15px auto 10px auto; /* Negative top margin pulls it closer */
-            z-index: 2; /* Ensures it stays visible above/below carousel */
-        }
-
-        .tuning-meter {
-            width: 100%;
-            height: 40px; 
-            /* Soft radial background fading smoothly into nothingness */
-            background: radial-gradient(ellipse,rgba(255,255,255,0.06) 10%, rgba(255,255,255,0) 60%);
-            position: relative;
-            border: none;
-            box-shadow: none;
-            border-radius: 0;
-        }
-
-        .tuning-center-notch {
-            position: absolute;
-            left: 50%;
-            top: 20%;
-            width: 2px;
-            height: 60%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-50%);
-            z-index: 3;
-            pointer-events: none;
-        }
-
-        /* --- 2. Accuracy Meter (Updated Spherical Ball) --- */
-        .tuning-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 21px; /* Made smaller */
-            height: 21px; /* Made smaller */
-            border-radius: 50%; 
-            transform: translate(-50%, -50%);
-            /* Smooth physics-like ease-out for natural gliding movement */
-            transition: left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            z-index: 2;
-        }
-
-        /* Spinning textured ball layer */
-        .tuning-indicator::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 50%;
-            /* Faint striped texture so the rotation is visible */
-            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 4px, transparent 4px, transparent 8px), 
-                        radial-gradient(circle at center, rgba(200,200,200,0.8) 0%, rgba(100,100,100,0.8) 100%);
-            /* Sync rotation transition with position transition */
-            transition: background 0.2s, transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: rotate(var(--roll, 0deg));
-        }
-
-        /* Fixed 3D highlight and shadow overlay (stays still while ball spins beneath) */
-        .tuning-indicator::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.85) 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            pointer-events: none;
-            transition: box-shadow 0.2s;
-        }
-
-        /* State colors applied to the textured layer */
-        .tuning-indicator.in-tune::before { 
-            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 4px, transparent 4px, transparent 8px), 
-                        radial-gradient(circle at center, #4ade80 0%, #065f46 100%);
-        }
-        .tuning-indicator.in-tune::after { box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
-
-        .tuning-indicator.flat::before { 
-            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 4px, transparent 4px, transparent 8px), 
-                        radial-gradient(circle at center, #60a5fa 0%, #1e3a8a 100%);
-        }
-        .tuning-indicator.flat::after { box-shadow: 0 0 15px rgba(96, 165, 250, 0.6); }
-
-        .tuning-indicator.sharp::before { 
-            background: repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 4px, transparent 4px, transparent 8px), 
-                        radial-gradient(circle at center, #f87171 0%, #7f1d1d 100%);
-        }
-        .tuning-indicator.sharp::after { box-shadow: 0 0 15px rgba(248, 113, 113, 0.6); 
-        }
-
-        /* --- 3. Grid Display for Indian Notation & Freq (Faded into Background) --- */
-        .note-display { 
-            width: 85%; 
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px; 
-            margin-bottom: 25px;
-            z-index: 2;
-        }
-        
-        #indian-note, #freq-display { 
-            /* Soft radial fade into main background, no borders/shadows */
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.06) 0%, transparent 80%);
-            background: none;
-            border: none;
-            box-shadow: none;
-            border-radius: 0;
-            
-            height: 70px; 
-            display: flex;
             align-items: center;
-            justify-content: center;
-            text-align: center;
         }
 
-        #indian-note {
-            font-size: 1.5rem; 
-            font-weight: 500; 
-            gap: 6px;
+        * { box-sizing: inherit; margin: 0; padding: 0; border: none !important; outline: none !important; }
+
+        .en-num { font-family: 'Be Vietnam Pro', sans-serif !important; }
+
+        .app-container {
+            width: 100vw; height: 100vh;
+            min-width: 320px; min-height: 480px; 
+            background: var(--glass-bg);
+            display: flex; flex-direction: column; overflow: hidden;
+            transition: background 0.4s ease;
         }
 
-        .roman-script {
-            font-size: 1.1rem;
-            color: rgba(255,255,255,0.4);
-            font-weight: 400;
+        /* --- HEADER --- */
+        .calendar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 24px; white-space: nowrap; flex-wrap: nowrap !important; flex-shrink: 0;
+            height: 84px; background: var(--glass-bg);
         }
 
-        #freq-display { 
-            font-size: 1.3rem; 
-            opacity: 0.8;
-            font-weight: 500;
-            font-variant-numeric: tabular-nums; 
-            letter-spacing: 1px;
+        .header-left { display: flex; align-items: center; flex-grow: 1; min-width: 0; }
+        .header-left h2 { 
+            font-family: 'Be Vietnam Pro', sans-serif; font-size: 1.8rem; font-weight: 800; 
+            color: var(--text-primary); cursor: pointer; padding: 6px 12px;
+            border-radius: 8px; transition: background 0.2s ease; margin-left: -8px; 
+        }
+        .header-left h2:hover { background: var(--btn-hover); }
+
+        .header-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+
+        button {
+            background: var(--btn-bg); color: var(--text-primary);
+            border-radius: 8px; padding: 8px 16px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            font-family: 'Inter', sans-serif;
         }
 
-        .faded-default {
-            opacity: 0.2;
-        }
-
-        /* --- 4. Controls (Raised Tinted Glass Button) --- */
-        .glass-btn {
-            background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 
-                0 15px 30px rgba(0,0,0,0.5), 
-                0 6px 10px rgba(0,0,0,0.4), 
-                inset 0 1px 2px rgba(255,255,255,0.2);
-                
-            padding: 20px 30px; 
-            font-size: 1.1rem;
-            color: #fff;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            width: 100%;
-            max-width: 240px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .glass-btn:hover { 
-            background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04));
-            transform: translateY(-2px); 
-            box-shadow: 
-                0 20px 35px rgba(0,0,0,0.6), 
-                0 8px 15px rgba(0,0,0,0.5), 
-                inset 0 1px 2px rgba(255,255,255,0.3);
-        }
+        button:hover:not(:disabled) { background: var(--btn-hover); }
+        .btn-primary { background: var(--accent-color); color: #ffffff; }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); color: white; }
         
-        .glass-btn:active { 
-            transform: translateY(4px); 
-            box-shadow: 
-                0 5px 10px rgba(0,0,0,0.4), 
-                inset 0 4px 8px rgba(0,0,0,0.2), 
-                inset 0 1px 2px rgba(255,255,255,0.1);
+        .header-right button { background: transparent; }
+        .header-right button:hover:not(:disabled) { background: var(--btn-hover); }
+        .icon-btn { padding: 8px; border-radius: 8px; }
+
+        /* --- CALENDAR BODY & GRID --- */
+        .calendar-body { 
+            display: flex; flex-direction: column; flex-grow: 1; 
+            overflow: hidden; padding: 0 16px 16px 16px;
         }
+
+        .weekdays {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            text-align: center; padding: 16px 8px 16px 8px; 
+            font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--text-primary); flex-shrink: 0;
+            background: transparent; align-items: center; justify-items: center;
+        }
+
+        .calendar-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); 
+            gap: 8px; flex-grow: 1; overflow: hidden; 
+        }
+
+        /* --- BORDERLESS DATE CARDS --- */
+        .day-cell {
+            position: relative; background: var(--cell-bg); border-radius: 10px; 
+            padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden;
+            transition: background 0.2s ease; user-select: none; cursor: pointer;
+            z-index: 1; /* For lunar background */
+        }
+        .day-cell:hover { background: var(--cell-hover); }
+        .day-cell.drag-selected { background: var(--drag-bg) !important; }
         
-        .glass-btn svg {
-            width: 22px;
-            height: 22px;
+        .show-weekends .day-cell.weekend { background: var(--weekend-bg); }
+        .show-weekends .day-cell.weekend:hover { background: var(--cell-hover); }
+        .day-cell.other-month { background: transparent; opacity: 0.2; }
+
+        .day-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; flex-shrink: 0; }
+        .date-number { 
+            font-size: 1rem; font-weight: 600; width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; flex-shrink: 0; 
+        }
+        .day-cell.today .date-number { background-color: var(--accent-color); color: #ffffff; }
+
+        /* Hindu Date Toggle Logic */
+        body:not(.show-hindu-date) .hindu-date { display: none !important; }
+        
+        .hindu-date {
+            font-size: clamp(0.6rem, 1vw, 0.75rem); color: var(--text-secondary);
+            opacity: 1; text-align: right; line-height: 1.2;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;
+            margin-top: 4px; font-weight: 600;
         }
 
-        /* --- Active Tuning Button State (Red Frosty & Pulsating only) --- */
-        body.tuning-active .glass-btn {
-            background: linear-gradient(145deg, rgba(239, 68, 68, 0.45), rgba(153, 27, 27, 0.15));
-            border: 1px solid rgba(248, 113, 113, 0.5);
-            animation: starkBreathe 1.2s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- ASTRO ROW --- */
+        .astro-row {
+            display: none; justify-content: space-between; align-items: center;
+            font-size: clamp(0.55rem, 0.9vw, 0.7rem); color: var(--text-secondary); font-weight: 600;
+            margin-top: 4px; opacity: 0.9; flex-shrink: 0; padding-top: 4px;
         }
 
-        body.tuning-active .glass-btn:hover {
-            background: linear-gradient(145deg, rgba(239, 68, 68, 0.55), rgba(153, 27, 27, 0.25));
-        }
+        .show-sun .astro-row, .show-moon .astro-row { display: flex; }
+        .sun-times, .moon-icon { display: none; }
+        .show-sun .sun-times { display: flex; align-items: center; gap: 6px; }
+        .show-moon .moon-icon { display: block; filter: grayscale(100%) contrast(1.2); }
+        .astro-svg { width: 1.1em; height: 1.1em; vertical-align: middle; margin-right: 2px; opacity: 0.8; }
 
-        @keyframes starkBreathe {
-            0% {
-                transform: scale(1);
-            }
-            100% {
-                transform: scale(1.04);
-            }
+        /* --- HIDDEN SCROLLBAR EVENTS --- */
+        .events-container {
+            display: flex; flex-direction: column; gap: 4px; flex-grow: 1;
+            overflow-y: auto; padding-right: 2px; margin-top: 2px;
+            -ms-overflow-style: none; scrollbar-width: none;
         }
+        .events-container::-webkit-scrollbar { display: none; }
 
-        /* --- 5. Modal Styling --- */
+        .event, .holiday {
+            font-size: 0.65rem; font-weight: 600; padding: 2px 6px; 
+            border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+        }
+        .event { background: var(--event-bg); color: var(--accent-color); }
+        .holiday { background: var(--holiday-bg); color: var(--holiday-color); }
+        .local-event { color: white; }
+
+        /* --- BORDERLESS MODALS & FORMS --- */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 1; transition: opacity 0.2s ease;
         }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .modal-overlay.hidden { opacity: 0; pointer-events: none; }
 
         .modal-content {
-            background: #111;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 40px 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            background: var(--modal-bg); border-radius: 16px; 
+            width: 90%; max-width: 400px; box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            overflow: hidden; /* Keeps sleek scrollbar inside */
         }
+        
+        .modal-padding-wrapper { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 
-        .modal-content p {
-            margin: 10px 0;
-            font-size: 1rem;
-            color: #d1d5db;
-            letter-spacing: 0.5px;
+        .modal-header { display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.3rem; font-weight: 700; font-family: 'Outfit', sans-serif;}
+        
+        /* Custom sleek scrollbar for compact settings */
+        .settings-body {
+            overflow-y: auto; padding: 12px 20px 20px 20px;
+            display: flex; flex-direction: column; gap: 10px; max-height: calc(85vh - 60px);
         }
+        .settings-body::-webkit-scrollbar { width: 6px; }
+        .settings-body::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+        .settings-body::-webkit-scrollbar-thumb { background: var(--btn-hover); border-radius: 10px; }
+        .settings-body::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
-        .modal-content p:first-child {
-            font-style: italic;
-            color: #6b7280;
-            margin-bottom: 20px;
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+        .setting-info { display: flex; flex-direction: column; gap: 2px; }
+        .setting-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+        .setting-desc { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;}
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        .form-group label { font-size: 0.8rem; color: var(--text-primary); font-weight: 600;}
+        
+        .form-group input, .form-group select, .setting-row select { 
+            font-family: 'Inter', sans-serif; padding: 10px 12px; border-radius: 8px; font-weight: 500;
+            background: var(--btn-bg); color: var(--text-primary); font-size: 0.85rem;
+            cursor: pointer; transition: background 0.2s ease;
         }
+        .form-group input:hover, .form-group select:hover, .setting-row select:hover { background: var(--btn-hover); }
+        
+        select { appearance: auto; -webkit-appearance: auto; padding-right: 8px !important; }
 
+        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+        .month-btn {
+            background: var(--btn-bg); color: var(--text-primary); padding: 14px 8px; border-radius: 8px; 
+            text-align: center; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease;
+        }
+        .month-btn:hover { background: var(--accent-color); color: #fff; }
+
+        .agenda-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; padding-right: 4px; -ms-overflow-style: none; scrollbar-width: none;}
+        .agenda-list::-webkit-scrollbar { display: none; }
+        
+        .agenda-item { 
+            background: var(--btn-bg); padding: 12px; border-radius: 10px; 
+            font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            line-height: 1.4; color: var(--text-primary); font-weight: 600;
+        }
+        .ev-time { font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.8rem; color: var(--text-secondary); min-width: 65px; text-align: right; margin-right: 8px; font-weight: 700;}
+
+        .toggle-switch {
+            position: relative; width: 36px; height: 20px; background: var(--btn-bg); border-radius: 12px; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.active { background: var(--accent-color); }
+        .toggle-switch.active::after { transform: translateX(16px); }
+
+        /* Mobile View Overrides */
+        @media (max-width: 600px) {
+            .calendar-header { padding: 16px 12px; min-height: 75px; flex-wrap: nowrap !important; gap: 6px; }
+            .header-left { width: auto; justify-content: flex-start; }
+            .header-right { width: auto; justify-content: flex-end; gap: 4px; }
+            .header-left h2 { font-size: 1.15rem; padding: 4px 8px; margin-left: 0;}
+
+            .icon-btn svg { width: 16px; height: 16px; }
+            button { padding: 6px 10px; font-size: 0.8rem; }
+
+            .calendar-grid { gap: 2px; }
+            .day-cell { padding: 4px; border-radius: 6px; }
+
+            .day-top { flex-direction: column; align-items: center; justify-content: center; margin-bottom: 2px; }
+            .date-number { font-size: 0.9rem; width: 20px; height: 20px; }
+            
+            /* Increased Top Padding for Indian Numbers in Mobile */
+            .hindu-date { text-align: center; max-width: 100%; margin-top: 6px; padding-top: 2px; font-size: 0.55rem; }
+
+            .event, .holiday { padding: 2px; font-size: 0.55rem; }
+            .weekdays { padding: 8px 2px; font-size: 0.65rem; }
+            .astro-row { font-size: 0.5rem; }
+            
+            /* Hide the default small moon icon */
+            .show-moon .moon-icon { display: none !important; }
+
+            /* Inject the moon emoji as a giant, faint background */
+            .show-moon .day-cell::before {
+                content: attr(data-moon);
+                position: absolute;
+                top: 50%; 
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 3rem;
+                opacity: 0.15; /* Increased opacity for better visibility */
+                z-index: -1;
+                filter: grayscale(50%); /* Reduced grayscale so it pops more */
+                pointer-events: none;
+            }
+        }
     </style>
 </head>
-<body>
-
-    <main class="glass-card">
-        <h1 id="title-logo">Chromatic Tuner</h1>
-        
-        <div class="carousel-container">
-            <div id="carousel-highlight" class="carousel-highlight"></div>
-            <div id="carousel-track" class="carousel-track">
+<body class="show-weekends show-sun show-moon show-hindu-date"> 
+    <main class="app-container">
+        <header class="calendar-header">
+            <div class="header-left">
+                <h2 id="current-month-year" class="en-num" title="Jump to Date">Month Year</h2>
             </div>
-        </div>
-
-        <div class="tuning-meter-container">
-            <div class="tuning-meter">
-                <div class="tuning-center-notch"></div>
-                <div id="tuning-indicator" class="tuning-indicator"></div>
+            <div class="header-right">
+                <button id="btn-header-add" class="icon-btn" aria-label="Add Event"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg></button>
+                <button id="btn-prev" class="icon-btn" aria-label="Previous Month"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"></path></svg></button>
+                <button id="btn-next" class="icon-btn" aria-label="Next Month"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"></path></svg></button>
+                <button id="btn-today">Today</button>
+                <button id="btn-settings" class="icon-btn" aria-label="Settings"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
             </div>
-        </div>
+        </header>
 
-        <div class="note-display">
-            <div id="indian-note"></div>
-            <div id="freq-display"></div>
-        </div>
-
-        <button id="toggle-btn" class="glass-btn">
-            <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
-            <span id="btn-text">Tune</span>
-        </button>
+        <section class="calendar-body">
+            <div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+        </section>
     </main>
 
-    <div id="info-modal" class="modal-overlay">
-        <div class="modal-content">
-            <p>"For the love of music"</p>
-            <p>Designed by Bhaskarjyoti Das</p>
-            <p>Made in India 🇮🇳</p>
+    <div id="datepicker-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 320px;">
+            <div class="modal-padding-wrapper">
+                <div class="modal-header" style="padding-bottom: 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                        <button id="picker-prev-year" class="icon-btn" style="background:transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"></path></svg></button>
+                        <h2 id="picker-year-display" class="en-num" style="font-size: 1.6rem; margin: 0; color: var(--text-primary);">2026</h2>
+                        <button id="picker-next-year" class="icon-btn" style="background:transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"></path></svg></button>
+                    </div>
+                </div>
+                <div class="month-grid">
+                    <button class="month-btn" data-month="0">Jan</button><button class="month-btn" data-month="1">Feb</button><button class="month-btn" data-month="2">Mar</button>
+                    <button class="month-btn" data-month="3">Apr</button><button class="month-btn" data-month="4">May</button><button class="month-btn" data-month="5">Jun</button>
+                    <button class="month-btn" data-month="6">Jul</button><button class="month-btn" data-month="7">Aug</button><button class="month-btn" data-month="8">Sep</button>
+                    <button class="month-btn" data-month="9">Oct</button><button class="month-btn" data-month="10">Nov</button><button class="month-btn" data-month="11">Dec</button>
+                </div>
+                <button class="btn-primary close-modal" style="margin-top: 4px; padding: 12px; width: 100%;">Cancel</button>
+            </div>
         </div>
     </div>
 
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-height: 85vh;">
+            <div class="modal-header" style="padding: 20px 20px 12px 20px; flex-shrink: 0; border-bottom: 1px solid var(--btn-bg);">
+                <h2>Preferences</h2>
+                <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            
+            <div class="settings-body">
+                <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 6px; border-bottom: 1px solid var(--btn-bg); padding-bottom: 10px;">
+                    <div class="setting-info" style="width: 100%;">
+                        <span class="setting-title">Import Calendars (.ics)</span>
+                        <span class="setting-desc">Import events from Thunderbird, Outlook, Apple</span>
+                        <input type="file" id="ics-upload" accept=".ics" style="margin-top: 8px; width: 100%; font-size: 0.8rem; background: transparent; padding: 0;">
+                    </div>
+                </div>
+
+                <div class="setting-row" style="flex-direction: column; align-items: flex-start; border-bottom: 1px solid var(--btn-bg); padding-bottom: 10px;">
+                    <span class="setting-title" style="margin-bottom: 4px;">My Calendars</span>
+                    <div id="calendars-list" style="width: 100%;"></div>
+                </div>
+
+                <div class="setting-row" style="margin-top: 4px;">
+                    <div class="setting-info"><span class="setting-title">Indian Dates</span><span class="setting-desc">Show Tithi and Maas</span></div>
+                    <div id="toggle-hindu" class="toggle-switch active"></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Dates Language</span></div>
+                    <select id="lang-select">
+                        <option value="bn">Bengali (বাংলা)</option>
+                        <option value="hi">Hindi (हिन्दी)</option>
+                        <option value="as">Assamese (অসমীয়া)</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Dark Mode</span></div><div id="toggle-theme" class="toggle-switch"></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Highlight Weekends</span></div><div id="toggle-weekends" class="toggle-switch active"></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Sun Times (GPS)</span><span class="setting-desc">Requires location permission</span></div><div id="toggle-sun" class="toggle-switch active"></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Lunar Phases</span></div><div id="toggle-moon" class="toggle-switch active"></div>
+                </div>
+                <div class="setting-row" style="margin-top: 6px;">
+                    <div class="setting-info"><span class="setting-title">Google Calendar</span><span class="setting-desc">Sync personal events</span></div>
+                    <button id="btn-sync" class="btn-primary" style="padding:6px 12px; font-size:0.8rem;">Sign In</button>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Push Offline Events</span><span class="setting-desc">Send local to Google</span></div>
+                    <button id="btn-push-google" style="padding:6px 12px; font-size:0.8rem;" disabled>Push</button>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Export (.ics)</span><span class="setting-desc">Backup to Thunderbird/Apple</span></div>
+                    <button id="btn-export" style="padding:6px 12px; font-size:0.8rem;">Export</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6;">
+                    <div style="font-weight: 600;">Designed by Bhaskarjyoti Das</div>
+                    <div><a href="https://github.com/mindfulfarmer/" target="_blank" style="color: var(--accent-color); text-decoration: none;">github.com/mindfulfarmer/</a></div>
+                    <div style="margin-top: 6px;">Made in India 🇮🇳</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-padding-wrapper">
+                <div class="modal-header">
+                    <h2 id="view-modal-title" class="en-num">Events</h2>
+                    <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                </div>
+                <div id="agenda-list" class="agenda-list"></div>
+                <button id="btn-agenda-add" class="btn-primary" style="margin-top: 8px; padding: 12px; width: 100%;">+ Add Event</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-padding-wrapper">
+                <div class="modal-header">
+                    <h2>Add Event</h2>
+                    <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                </div>
+                <div class="form-group">
+                    <label>Event Title</label>
+                    <input type="text" id="ev-title" placeholder="Meeting with John" autocomplete="off">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="ev-start" class="en-num">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time (Opt)</label>
+                        <input type="time" id="ev-start-time" class="en-num">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="ev-end" class="en-num">
+                    </div>
+                    <div class="form-group">
+                        <label>End Time (Opt)</label>
+                        <input type="time" id="ev-end-time" class="en-num">
+                    </div>
+                </div>
+                <button id="btn-save-event" class="btn-primary" style="margin-top: 8px; padding: 12px; width: 100%;">Save Local Event</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
+    
     <script>
-        // --- User Settings & Permissions Management (PWA Local Storage) ---
-        const SETTINGS_KEY = 'chromaticTunerSettings';
-        let appSettings = { micPermissionGranted: false, lastUsed: null };
+        // --- TRANSLATION ENGINE & NUMBER CONVERTER ---
+        const i18n = {
+            'bn': { months: {'Magha':'মাঘ', 'Phalguna':'ফাল্গুন', 'Chaitra':'চৈত্র', 'Vaisakha':'বৈশাখ', 'Jyeshtha':'জ্যৈষ্ঠ', 'Ashadha':'আষাঢ়', 'Shravana':'শ্রাবণ', 'Bhadrapada':'ভাদ্র', 'Ashvina':'আশ্বিন', 'Kartika':'কার্তিক', 'Margashirsha':'অগ্রহায়ণ', 'Pausha':'পৌষ'} },
+            'hi': { months: {'Magha':'माघ', 'Phalguna':'फाल्गुन', 'Chaitra':'चैत्र', 'Vaisakha':'वैशाख', 'Jyeshtha':'ज्येष्ठ', 'Ashadha':'आषाढ़', 'Shravana':'श्रावण', 'Bhadrapada':'भाद्रपद', 'Ashvina':'आश्विन', 'Kartika':'कार्तिक', 'Margashirsha':'मार्गशीर्ष', 'Pausha':'पौष'} },
+            'as': { months: {'Magha':'মাঘ', 'Phalguna':'ফাল্গুন', 'Chaitra':'চ’ত', 'Vaisakha':'বহাগ', 'Jyeshtha':'জেঠ', 'Ashadha':'আহাৰ', 'Shravana':'শাওণ', 'Bhadrapada':'ভাদ', 'Ashvina':'আহিন', 'Kartika':'কাতি', 'Margashirsha':'আঘোণ', 'Pausha':'পুহ'} },
+            'en': { months: {'Magha':'Magha', 'Phalguna':'Phalguna', 'Chaitra':'Chaitra', 'Vaisakha':'Vaisakha', 'Jyeshtha':'Jyeshtha', 'Ashadha':'Ashadha', 'Shravana':'Shravana', 'Bhadrapada':'Bhadrapada', 'Ashvina':'Ashvina', 'Kartika':'Kartika', 'Margashirsha':'Margashirsha', 'Pausha':'Pausha'} }
+        };
+        const numMaps = {
+            'bn': ['০','১','২','৩','৪','৫','৬','৭','৮','৯'],
+            'as': ['০','১','২','৩','৪','৫','৬','৭','৮','৯'],
+            'hi': ['०','१','२','३','४','५','६','७','८','९'],
+            'en': ['0','1','2','3','4','5','6','7','8','9']
+        };
 
-        function loadSettings() {
-            try {
-                const stored = localStorage.getItem(SETTINGS_KEY);
-                if (stored) {
-                    appSettings = { ...appSettings, ...JSON.parse(stored) };
-                }
-            } catch (e) {
-                console.warn('Local Storage is not available or accessible.');
-            }
+        let currentLang = localStorage.getItem('mytime_lang') || 'bn';
+        function tMonth(m) { return i18n[currentLang].months[m] || m; }
+        function tNum(num) {
+            if (currentLang === 'en') return num.toString();
+            return num.toString().split('').map(d => numMaps[currentLang][d] || d).join('');
         }
 
-        function saveSettings() {
-            try {
-                appSettings.lastUsed = new Date().toISOString();
-                localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
-            } catch (e) {
-                console.warn('Failed to save settings to Local Storage.');
-            }
+        // --- GOOGLE API CONFIG ---
+        const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; 
+        const API_KEY = 'YOUR_API_KEY'; 
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events'; 
+
+        // --- STATE & OFFLINE STORAGE ---
+        let tokenClient, gapiInited = false, gisInited = false;
+        let eventsList = [], holidaysList = [];
+        let localEvents = JSON.parse(localStorage.getItem('mytime_events')) || [];
+        let myCalendars = JSON.parse(localStorage.getItem('mytime_calendars')) || [{ id: 'default', name: 'Default Local Calendar', color: '#0072CE', visible: true }];
+
+        let currentDate = new Date();
+        let userLat = 28.6139, userLon = 77.2090; 
+        
+        let isDragging = false, dragStart = null, dragEnd = null, clickTimer = null;
+        let activeAgendaDate = null, tempPickerYear = currentDate.getFullYear();
+
+        const grid = document.getElementById('calendar-grid');
+        const monthYearDisplay = document.getElementById('current-month-year');
+        const modals = document.querySelectorAll('.modal-overlay');
+
+        const sunriseSVG = `<svg class="astro-svg" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 4v4m-5.65-1.65l2.82 2.82m11.31-2.82l-2.82 2.82M2 18h20m-5-4a5 5 0 00-10 0"/></svg>`;
+        const sunsetSVG = `<svg class="astro-svg" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 12v4m-5.65-5.65l2.82 2.82m11.31-2.82l-2.82 2.82M2 18h20m-5-4a5 5 0 00-10 0"/></svg>`;
+        const trashSVG = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+
+        // --- ASTRONOMY & PANCHANG ---
+        function getMoonFraction(year, month, day) {
+            let c = 0, e = 0, jd = 0; if (month < 3) { year--; month += 12; }
+            ++month; c = 365.25 * year; e = 30.6 * month; jd = c + e + day - 694039.09; 
+            return (jd / 29.5305882) % 1;
         }
 
-        loadSettings(); // Initialize settings on load
-
-        // --- Modal Logic ---
-        const titleLogo = document.getElementById('title-logo');
-        const infoModal = document.getElementById('info-modal');
-
-        titleLogo.addEventListener('click', () => {
-            infoModal.classList.add('active');
-        });
-
-        infoModal.addEventListener('click', () => {
-            infoModal.classList.remove('active');
-        });
-
-        // --- Data Mapping ---
-        const westernNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-        const indianNotes = [
-            "सा <span class='roman-script'>(S)</span>", 
-            "रे॒ <span class='roman-script'>(r)</span>", 
-            "रे <span class='roman-script'>(R)</span>", 
-            "ग॒ <span class='roman-script'>(g)</span>", 
-            "ग <span class='roman-script'>(G)</span>", 
-            "म <span class='roman-script'>(m)</span>", 
-            "म॑ <span class='roman-script'>(M)</span>", 
-            "प <span class='roman-script'>(P)</span>", 
-            "ध॒ <span class='roman-script'>(d)</span>", 
-            "ध <span class='roman-script'>(D)</span>", 
-            "नि॒ <span class='roman-script'>(n)</span>", 
-            "नि <span class='roman-script'>(N)</span>"
-        ];
-
-        // --- Carousel Setup ---
-        const START_MIDI = 24; // C1
-        const END_MIDI = 108;  // C8
-        const NOTE_WIDTH = 120; 
-        const track = document.getElementById('carousel-track');
-        const highlightRegion = document.getElementById('carousel-highlight');
-
-        for (let i = START_MIDI; i <= END_MIDI; i++) {
-            const el = document.createElement('div');
-            el.className = 'carousel-note';
-            el.id = 'note-' + i;
+        function getSunTimes(date, lat, lng) {
+            const PI = Math.PI, sin = Math.sin, cos = Math.cos, tan = Math.tan, acos = Math.acos, rad = PI / 180;
+            const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+            const fractionalYear = (2 * PI / 365) * (dayOfYear - 1 + (12 - 12) / 24);
+            const eqTime = 229.18 * (0.000075 + 0.001868 * cos(fractionalYear) - 0.032077 * sin(fractionalYear) - 0.014615 * cos(2 * fractionalYear) - 0.040849 * sin(2 * fractionalYear));
+            const declination = 0.006918 - 0.399912 * cos(fractionalYear) + 0.070257 * sin(fractionalYear) - 0.006758 * cos(2 * fractionalYear) + 0.000907 * sin(2 * fractionalYear) - 0.002697 * cos(3 * fractionalYear) + 0.00148 * sin(3 * fractionalYear);
             
-            let noteName = westernNotes[i % 12];
-            if(noteName.includes('#')) {
-                noteName = noteName.replace('#', '<span class="sharp-sym">#</span>');
-            }
-
-            const octaveNumber = Math.floor(i / 12) - 1; 
-            el.innerHTML = `${noteName}<sub>${octaveNumber}</sub>`;
-            track.appendChild(el);
+            let haStr = cos(90.833 * rad) / (cos(lat * rad) * cos(declination)) - tan(lat * rad) * tan(declination);
+            if (haStr < -1 || haStr > 1) return { sunRise: '--:--', sunSet: '--:--' }; 
+            
+            const ha = acos(haStr) / rad, sunriseUTC = 720 - 4 * lng - ha * 4 - eqTime, sunsetUTC = 720 - 4 * lng + ha * 4 - eqTime;
+            const offset = -date.getTimezoneOffset(); 
+            
+            const formatTime = (minutes) => {
+                let m = Math.round(minutes + offset); if (m < 0) m += 1440; if (m >= 1440) m -= 1440;
+                return `${Math.floor(m / 60)}:${(m % 60).toString().padStart(2, '0')}`;
+            };
+            
+            const fraction = getMoonFraction(date.getFullYear(), date.getMonth()+1, date.getDate());
+            let b = Math.round(fraction * 8); if (b >= 8) b = 0;
+            return { sunRise: formatTime(sunriseUTC), sunSet: formatTime(sunsetUTC), moon: ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][b], fraction: fraction };
         }
 
-        function resetUI() {
-            const defaultNote = 69; // A4
-            const offset = (defaultNote - START_MIDI) * NOTE_WIDTH + (NOTE_WIDTH / 2);
-            track.style.transform = `translateX(${-offset}px)`;
-            
-            document.querySelectorAll('.carousel-note').forEach(el => el.className = 'carousel-note');
-            
-            // Highlight default note A4 to show its big size
-            const defaultEl = document.getElementById('note-' + defaultNote);
-            if(defaultEl) defaultEl.classList.add('active-default');
-            
-            const indicator = document.getElementById('tuning-indicator');
-            indicator.style.left = '50%';
-            indicator.style.setProperty('--roll', '0deg'); // Add this line
-            indicator.className = 'tuning-indicator';
-            
-            highlightRegion.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            highlightRegion.style.boxShadow = '0 0 30px rgba(0,0,0,0.6)';
-
-            // Faded default values
-            document.getElementById('indian-note').innerHTML = "<span class='faded-default'>सा <span class='roman-script'>(S)</span></span>";
-            document.getElementById('freq-display').innerHTML = "<span class='faded-default'>440.0 Hz</span>";
-        }
-        resetUI();
-
-        // --- Audio Context & Pitch Detection ---
-        let audioContext = null;
-        let analyser = null;
-        let mediaStreamSource = null;
-        let globalStream = null; // Added: Holds the mic stream permanently for the session
-        let isTuning = false;
-        let animationId = null;
-        let wasInTune = false; // Added: Tracks tuning state to trigger haptics only once
-
-        // --- Wake Lock Management ---
-        let wakeLock = null;
-
-        async function requestWakeLock() {
-            if ('wakeLock' in navigator) {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Screen Wake Lock active');
-                    
-                    wakeLock.addEventListener('release', () => {
-                        console.log('Screen Wake Lock released automatically');
-                    });
-                } catch (err) {
-                    console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
-                }
-            }
+        function getIndianDate(date, fraction) {
+            const m = date.getMonth(), d = date.getDate();
+            let maas = (m==0&&d>=15)||(m==1&&d<=13)?"Magha":(m==1&&d>=14)||(m==2&&d<=14)?"Phalguna":(m==2&&d>=15)||(m==3&&d<=13)?"Chaitra":(m==3&&d>=14)||(m==4&&d<=14)?"Vaisakha":(m==4&&d>=15)||(m==5&&d<=14)?"Jyeshtha":(m==5&&d>=15)||(m==6&&d<=15)?"Ashadha":(m==6&&d>=16)||(m==7&&d<=16)?"Shravana":(m==7&&d>=17)||(m==8&&d<=16)?"Bhadrapada":(m==8&&d>=17)||(m==9&&d<=16)?"Ashvina":(m==9&&d>=17)||(m==10&&d<=15)?"Kartika":(m==10&&d>=16)||(m==11&&d<=15)?"Margashirsha":"Pausha";
+            const age = fraction * 29.53; let tithiNum = Math.ceil(age <= 14.76 ? age : (age - 14.76));
+            if(tithiNum < 1) tithiNum = 1; if(tithiNum > 15) tithiNum = 15;
+            return `${tNum(tithiNum)} ${tMonth(maas)}`;
         }
 
-        function releaseWakeLock() {
-            if (wakeLock !== null) {
-                wakeLock.release().then(() => {
-                    wakeLock = null;
-                    console.log('Screen Wake Lock released manually');
+        // --- SMOOTH NAVIGATION (Vertical Sliding List Feel) ---
+        function smoothNavigate(offset) {
+            if(offset === 0) currentDate = new Date();
+            else currentDate.setMonth(currentDate.getMonth() + offset);
+            
+            fetchIndianHolidays(currentDate.getFullYear()).then(() => {
+                updateCalendarView();
+            });
+        }
+
+        // --- INIT UI ---
+        function initControls() {
+            document.getElementById('btn-prev').addEventListener('click', () => smoothNavigate(-1));
+            document.getElementById('btn-next').addEventListener('click', () => smoothNavigate(1));
+            document.getElementById('btn-today').addEventListener('click', () => smoothNavigate(0));
+            
+            document.getElementById('btn-header-add').addEventListener('click', () => {
+                let todayStr = new Date().toISOString().split('T')[0];
+                document.getElementById('ev-start').value = todayStr; document.getElementById('ev-end').value = todayStr;
+                document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = '';
+                document.getElementById('ev-title').value = ''; openModal('add-modal');
+            });
+
+            document.getElementById('btn-settings').addEventListener('click', () => { renderCalendarsList(); openModal('settings-modal'); });
+            
+            monthYearDisplay.addEventListener('click', () => {
+                tempPickerYear = currentDate.getFullYear(); document.getElementById('picker-year-display').textContent = tempPickerYear; openModal('datepicker-modal');
+            });
+            document.getElementById('picker-prev-year').addEventListener('click', () => document.getElementById('picker-year-display').textContent = --tempPickerYear);
+            document.getElementById('picker-next-year').addEventListener('click', () => document.getElementById('picker-year-display').textContent = ++tempPickerYear);
+            document.querySelectorAll('.month-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const m = parseInt(e.target.getAttribute('data-month'));
+                    currentDate.setMonth(m); currentDate.setFullYear(tempPickerYear); closeAllModals(); smoothNavigate(0);
                 });
-            }
-        }
+            });
 
-        // Re-acquire wake lock if the app is minimized and then brought back to the foreground
-        document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible' && isTuning) {
-                await requestWakeLock();
-            }
-        });
+            document.getElementById('btn-agenda-add').addEventListener('click', () => {
+                closeAllModals(); document.getElementById('ev-start').value = activeAgendaDate; document.getElementById('ev-end').value = activeAgendaDate;
+                document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal');
+            });
 
-        const toggleBtn = document.getElementById('toggle-btn');
-        const btnText = document.getElementById('btn-text');
-        const micIcon = document.getElementById('mic-icon');
-        const indianNoteEl = document.getElementById('indian-note');
-        const freqDisplayEl = document.getElementById('freq-display');
-        const tuningIndicator = document.getElementById('tuning-indicator');
+            document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', closeAllModals));
+            modals.forEach(m => m.addEventListener('click', (e) => { if(e.target === m) closeAllModals(); }));
 
-        function noteFromPitch(frequency) {
-            const noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
-            return Math.round(noteNum) + 69;
-        }
-
-        function frequencyFromNoteNumber(note) {
-            return 440 * Math.pow(2, (note - 69) / 12);
-        }
-
-        function centsOffFromPitch(frequency, note) {
-            return Math.floor(1200 * Math.log(frequency / frequencyFromNoteNumber(note)) / Math.log(2));
-        }
-
-        function autoCorrelate(buf, sampleRate) {
-            let SIZE = buf.length;
-            let rms = 0;
-
-            for (let i = 0; i < SIZE; i++) {
-                let val = buf[i];
-                rms += val * val;
-            }
-            rms = Math.sqrt(rms / SIZE);
-            if (rms < 0.01) return -1; 
-
-            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
-            for (let i = 0; i < SIZE / 2; i++)
-                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
-            for (let i = 1; i < SIZE / 2; i++)
-                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
-
-            buf = buf.slice(r1, r2);
-            SIZE = buf.length;
-
-            let c = new Array(SIZE).fill(0);
-            for (let i = 0; i < SIZE; i++)
-                for (let j = 0; j < SIZE - i; j++)
-                    c[i] = c[i] + buf[j] * buf[j + i];
-
-            let d = 0; while (c[d] > c[d + 1]) d++;
-            let maxval = -1, maxpos = -1;
-            for (let i = d; i < SIZE; i++) {
-                if (c[i] > maxval) {
-                    maxval = c[i];
-                    maxpos = i;
+            document.getElementById('agenda-list').addEventListener('click', async (e) => {
+                const delBtn = e.target.closest('.delete-ev-btn'); if(!delBtn) return;
+                const id = delBtn.getAttribute('data-id'), isGcal = delBtn.getAttribute('data-is-gcal') === 'true';
+                if(isGcal) {
+                    if(confirm("Delete this event from Google Calendar?")) {
+                        delBtn.disabled = true;
+                        try { await gapi.client.calendar.events.delete({ 'calendarId': 'primary', 'eventId': id }); fetchGoogleEvents(); closeAllModals(); } 
+                        catch(err) { alert("Failed to delete event."); delBtn.disabled = false; }
+                    }
+                } else {
+                    if(confirm("Delete this local event?")) {
+                        localEvents = localEvents.filter(ev => ev.id !== id); localStorage.setItem('mytime_events', JSON.stringify(localEvents));
+                        placeEventsOnGrid(); closeAllModals();
+                    }
                 }
-            }
-            let T0 = maxpos;
+            });
 
-            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
-            let a = (x1 + x3 - 2 * x2) / 2;
-            let b = (x3 - x1) / 2;
-            if (a) T0 = T0 - b / (2 * a);
+            document.getElementById('btn-export').addEventListener('click', () => {
+                let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//My Calendar//Local Events//EN\n";
+                localEvents.forEach(ev => {
+                    icsContent += "BEGIN:VEVENT\nUID:${ev.id}@mytime\n";
+                    const formatIcsDate = (dStr) => dStr.includes('T') ? dStr.replace(/[-:]/g, '') + '00' : dStr.replace(/-/g, '');
+                    const dtstart = formatIcsDate(ev.start), dtend = formatIcsDate(ev.end);
+                    if (!ev.start.includes('T')) {
+                        icsContent += `DTSTART;VALUE=DATE:${dtstart}\n`; let eDate = new Date(ev.end); eDate.setDate(eDate.getDate() + 1);
+                        icsContent += `DTEND;VALUE=DATE:${eDate.toISOString().split('T')[0].replace(/-/g, '')}\n`;
+                    } else { icsContent += `DTSTART:${dtstart}\nDTEND:${dtend}\n`; }
+                    icsContent += `SUMMARY:${ev.summary}\nEND:VEVENT\n`;
+                });
+                icsContent += "END:VCALENDAR";
+                const dl = document.createElement('a'); dl.setAttribute("href", window.URL.createObjectURL(new Blob([icsContent], { type: 'text/calendar;charset=utf-8' }))); 
+                dl.setAttribute("download", "my_calendar_events.ics"); dl.click();
+            });
 
-            return sampleRate / T0;
-        }
-
-        function updatePitch() {
-            const bufferLength = analyser.fftSize;
-            const buffer = new Float32Array(bufferLength);
-            analyser.getFloatTimeDomainData(buffer);
-            
-            const ac = autoCorrelate(buffer, audioContext.sampleRate);
-
-            if (ac !== -1) {
-                const pitch = ac;
-                let note = noteFromPitch(pitch);
-                
-                if (note < START_MIDI) note = START_MIDI;
-                if (note > END_MIDI) note = END_MIDI;
-
-                const noteIndex = note % 12;
-                const cents = centsOffFromPitch(pitch, note);
-
-                indianNoteEl.innerHTML = indianNotes[noteIndex];
-                freqDisplayEl.textContent = `${pitch.toFixed(1)} Hz`;
-
-                const N_continuous = (note - START_MIDI) + (cents / 100);
-                const translateX = -(N_continuous * NOTE_WIDTH + (NOTE_WIDTH / 2));
-                track.style.transform = `translateX(${translateX}px)`;
-
-                let meterPercent = 50 + (cents * 0.8); 
-                tuningIndicator.style.left = `${meterPercent}%`;
-                // Add this line to map the position directly to physical rolling rotation
-                tuningIndicator.style.setProperty('--roll', `${meterPercent * 12}deg`);
-
-                document.querySelectorAll('.carousel-note').forEach(el => el.className = 'carousel-note');
-                tuningIndicator.className = 'tuning-indicator'; 
-
-                const activeEl = document.getElementById('note-' + note);
-                
-                if (activeEl) {
-                    if (Math.abs(cents) <= 5) {
-                        activeEl.classList.add('in-tune');
-                        tuningIndicator.classList.add('in-tune');
-                        highlightRegion.style.borderColor = 'rgba(74, 222, 128, 0.5)';
-                        highlightRegion.style.boxShadow = '0 0 35px rgba(74, 222, 128, 0.25)';
-                        
-                        // Trigger Haptic Feedback exactly once when landing in-tune
-                        if (!wasInTune) {
-                            if (navigator.vibrate) {
-                                navigator.vibrate(50); 
-                            }
-                            wasInTune = true;
-                        }
-                    } else {
-                        // Reset the haptic lock if we drift out of tune
-                        wasInTune = false; 
-                        
-                        if (cents < -5) {
-                            activeEl.classList.add('flat');
-                            tuningIndicator.classList.add('flat');
-                            highlightRegion.style.borderColor = 'rgba(96, 165, 250, 0.4)';
-                            highlightRegion.style.boxShadow = '0 0 30px rgba(96, 165, 250, 0.2)';
-                        } else {
-                            activeEl.classList.add('sharp');
-                            tuningIndicator.classList.add('sharp');
-                            highlightRegion.style.borderColor = 'rgba(248, 113, 113, 0.4)';
-                            highlightRegion.style.boxShadow = '0 0 30px rgba(248, 113, 113, 0.2)';
+            document.getElementById('ics-upload').addEventListener('change', function(e) {
+                const file = e.target.files[0]; if (!file) return;
+                let parsedCalName = file.name.replace('.ics', ''), newCalId = 'cal_' + Date.now().toString(36);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const lines = e.target.result.split(/\r?\n/); let inEvent = false, currentEvent = {}, importedCount = 0;
+                    for (let i = 0; i < lines.length; i++) {
+                        let line = lines[i]; while (i + 1 < lines.length && (lines[i + 1].startsWith(' ') || lines[i + 1].startsWith('\t'))) { line += lines[i + 1].substring(1); i++; }
+                        if (line.startsWith('X-WR-CALNAME:')) parsedCalName = line.substring(13).trim();
+                        if (line.startsWith('BEGIN:VEVENT')) { inEvent = true; currentEvent = { id: Date.now().toString() + Math.random().toString(36).substr(2, 5), calendarId: newCalId, isSynced: false }; } 
+                        else if (line.startsWith('END:VEVENT')) { if (inEvent && currentEvent.summary && currentEvent.start) { if (!currentEvent.end) currentEvent.end = currentEvent.start; localEvents.push(currentEvent); importedCount++; } inEvent = false; } 
+                        else if (inEvent) {
+                            if (line.startsWith('SUMMARY:')) currentEvent.summary = line.substring(8);
+                            else if (line.startsWith('DTSTART')) currentEvent.start = parseIcsDate(line);
+                            else if (line.startsWith('DTEND')) currentEvent.end = parseIcsDate(line);
                         }
                     }
-                }
+                    if (importedCount > 0) {
+                        myCalendars.push({ id: newCalId, name: parsedCalName, color: '#' + Math.floor(Math.random()*16777215).toString(16), visible: true });
+                        localStorage.setItem('mytime_calendars', JSON.stringify(myCalendars)); localStorage.setItem('mytime_events', JSON.stringify(localEvents));
+                        alert(`Successfully imported ${importedCount} events into "${parsedCalName}"!`); renderCalendarsList(); placeEventsOnGrid();
+                    } else alert("No valid events found in the file.");
+                    document.getElementById('ics-upload').value = ''; 
+                }; reader.readAsText(file);
+            });
+
+            function parseIcsDate(line) {
+                const parts = line.split(':'); if (parts.length < 2) return ''; const dStr = parts[1].trim();
+                if (dStr.length >= 8) {
+                    let iso = `${dStr.substring(0, 4)}-${dStr.substring(4, 6)}-${dStr.substring(6, 8)}`;
+                    if (dStr.length >= 15 && dStr.includes('T')) iso += `T${dStr.substring(dStr.indexOf('T') + 1, dStr.indexOf('T') + 3)}:${dStr.substring(dStr.indexOf('T') + 3, dStr.indexOf('T') + 5)}`;
+                    return iso;
+                } return '';
             }
 
-            if (isTuning) {
-                animationId = requestAnimationFrame(updatePitch);
+            document.getElementById('btn-save-event').addEventListener('click', () => {
+                const title = document.getElementById('ev-title').value, startDate = document.getElementById('ev-start').value, startTime = document.getElementById('ev-start-time').value;
+                if(title && startDate) {
+                    let finalStart = startTime ? `${startDate}T${startTime}` : startDate, finalEnd = document.getElementById('ev-end-time').value ? `${document.getElementById('ev-end').value || startDate}T${document.getElementById('ev-end-time').value}` : (document.getElementById('ev-end').value || startDate);
+                    localEvents.push({ id: Date.now().toString(), calendarId: 'default', summary: title, start: finalStart, end: finalEnd, isSynced: false });
+                    localStorage.setItem('mytime_events', JSON.stringify(localEvents)); closeAllModals(); placeEventsOnGrid();
+                }
+            });
+
+            let monthScrollLock = null;
+            document.querySelector('.calendar-body').addEventListener('wheel', (e) => {
+                const evContainer = e.target.closest('.events-container');
+                if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; 
+                if (monthScrollLock) return;
+                
+                if (Math.abs(e.deltaY) > 20) {
+                    const dir = e.deltaY > 0 ? 1 : -1;
+                    monthScrollLock = setTimeout(() => monthScrollLock = null, 400); // Prevent rapid firing
+                    smoothNavigate(dir);
+                }
+            }, {passive: true});
+
+            initSettings(); requestLocationPermissionIfSunOn();
+        }
+
+        function renderCalendarsList() {
+            const list = document.getElementById('calendars-list'); if(!list) return; list.innerHTML = '';
+            myCalendars.forEach(cal => {
+                const div = document.createElement('div'); div.style = "display:flex; justify-content:space-between; align-items:center; background: var(--btn-bg); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; font-size:0.85rem; font-weight:600;";
+                const nameSpan = document.createElement('span'); nameSpan.innerHTML = `<span style="color:${cal.color}; font-size:1.2rem; line-height:0.5; vertical-align: middle;">•</span> ${cal.name}`;
+                const btn = document.createElement('button'); btn.innerHTML = trashSVG; btn.style = "background: transparent; padding: 4px; color: var(--holiday-color);"; btn.title = "Delete Calendar";
+                if(cal.id !== 'default') {
+                    btn.onclick = () => {
+                        if(confirm(`Delete imported calendar "${cal.name}" and all its events?`)) {
+                            myCalendars = myCalendars.filter(c => c.id !== cal.id); localEvents = localEvents.filter(e => e.calendarId !== cal.id);
+                            localStorage.setItem('mytime_calendars', JSON.stringify(myCalendars)); localStorage.setItem('mytime_events', JSON.stringify(localEvents));
+                            renderCalendarsList(); placeEventsOnGrid();
+                        }
+                    };
+                } else { btn.style.opacity = '0.3'; btn.disabled = true; btn.title = "Default calendar cannot be deleted"; } 
+                div.appendChild(nameSpan); div.appendChild(btn); list.appendChild(div);
+            });
+        }
+
+        function requestLocationPermissionIfSunOn() {
+            if(localStorage.getItem('minima_show_sun') === 'true' && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition( pos => { userLat = pos.coords.latitude; userLon = pos.coords.longitude; fetchIndianHolidays(currentDate.getFullYear()).then(() => updateCalendarView()); }, err => { console.warn('Location access denied.'); } );
             }
         }
 
-        toggleBtn.addEventListener('click', async () => {
-            if (isTuning) {
-                isTuning = false;
-                wasInTune = false; // Reset tuning lock on stop
-                cancelAnimationFrame(animationId);
-                
-                // Suspend the audio context to save CPU, but keep the stream alive
-                if (audioContext && audioContext.state === 'running') {
-                    await audioContext.suspend();
-                }
-                
-                // Release the screen wake lock
-                releaseWakeLock();
-                
-                document.body.classList.remove('tuning-active');
-                btnText.textContent = 'Tune';
-                micIcon.style.color = 'currentColor'; 
-                resetUI();
-            } else {
-                try {
-                    // 1. Initialize AudioContext if it doesn't exist yet
-                    if (!audioContext) {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    }
+        function initSettings() {
+            const body = document.body, langSelect = document.getElementById('lang-select');
+            langSelect.value = currentLang; langSelect.addEventListener('change', (e) => { currentLang = e.target.value; localStorage.setItem('mytime_lang', currentLang); fetchIndianHolidays(currentDate.getFullYear()).then(() => updateCalendarView()); });
 
-                    // 2. Resume the context if it was previously suspended
-                    if (audioContext.state === 'suspended') {
-                        await audioContext.resume();
-                    }
+            const isDark = localStorage.getItem('minima_theme') === 'dark' || (!localStorage.getItem('minima_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const tTheme = document.getElementById('toggle-theme'); if(isDark) { document.documentElement.setAttribute('data-theme', 'dark'); tTheme.classList.add('active'); }
+            tTheme.addEventListener('click', () => { tTheme.classList.toggle('active'); const theme = tTheme.classList.contains('active') ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('minima_theme', theme); });
 
-                    // 3. Request microphone ONLY if we haven't already grabbed it this session
-                    if (!globalStream) {
-                        globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        
-                        appSettings.micPermissionGranted = true;
-                        saveSettings();
-
-                        analyser = audioContext.createAnalyser();
-                        analyser.fftSize = 2048;
-                        
-                        mediaStreamSource = audioContext.createMediaStreamSource(globalStream);
-                        mediaStreamSource.connect(analyser);
-                    }
-                    
-                    isTuning = true;
-                    document.body.classList.add('tuning-active');
-                    btnText.textContent = 'Stop Tuning';
-                    micIcon.style.color = '#ffffff'; // Stays crisp white against the red breathing button
-                    
-                    // Keep the screen awake
-                    await requestWakeLock();
-                    
-                    updatePitch();
-                } catch (err) {
-                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                        appSettings.micPermissionGranted = false;
-                        saveSettings();
-                    }
-                    alert('Microphone access is required to tune your instrument. Please check your browser or system settings.');
-                    console.error('Mic error:', err);
-                }
-            }
-        });
-
-        // --- SW Registration & Cache Management ---
-        window.addEventListener('load', () => {
-            // Check if the app is running as an installed PWA
-            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-            if (!isPWA) {
-                // If opened in a regular browser, clear all previous caches
-                if ('caches' in window) {
-                    caches.keys().then(cacheNames => {
-                        cacheNames.forEach(cacheName => {
-                            caches.delete(cacheName);
-                        });
-                        console.log('Browser mode detected: Cleared previous caches.');
-                    });
-                }
-            } else {
-                console.log('PWA mode detected: Caches preserved.');
-            }
-
-            // Register Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js').catch(err => {
-                    console.log('SW Registration failed or skipped:', err);
+            const setups = [ { id: 'toggle-weekends', key: 'minima_show_weekends', cls: 'show-weekends', def: true }, { id: 'toggle-sun', key: 'minima_show_sun', cls: 'show-sun', def: true }, { id: 'toggle-moon', key: 'minima_show_moon', cls: 'show-moon', def: true }, { id: 'toggle-hindu', key: 'minima_show_hindu', cls: 'show-hindu-date', def: true } ];
+            setups.forEach(s => {
+                const el = document.getElementById(s.id); let state = localStorage.getItem(s.key); state = state === null ? s.def : state === 'true';
+                if(state) { body.classList.add(s.cls); el.classList.add('active'); } else { body.classList.remove(s.cls); el.classList.remove('active'); }
+                el.addEventListener('click', () => {
+                    el.classList.toggle('active'); const isActive = el.classList.contains('active');
+                    if(isActive) body.classList.add(s.cls); else body.classList.remove(s.cls);
+                    localStorage.setItem(s.key, isActive);
+                    if (s.id === 'toggle-sun' && isActive) requestLocationPermissionIfSunOn();
                 });
+            });
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeAllModals() { modals.forEach(m => m.classList.add('hidden')); activeAgendaDate = null; }
+
+        function updateCalendarView() {
+            monthYearDisplay.textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); grid.innerHTML = '';
+            const year = currentDate.getFullYear(), month = currentDate.getMonth(), firstDayIndex = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), prevDaysInMonth = new Date(year, month, 0).getDate(), today = new Date();
+            let cells = [];
+            for (let i = firstDayIndex - 1; i >= 0; i--) cells.push({ date: new Date(year, month - 1, prevDaysInMonth - i), isOther: true });
+            for (let i = 1; i <= daysInMonth; i++) cells.push({ date: new Date(year, month, i), isOther: false });
+            let nextDay = 1; while (cells.length < 42) cells.push({ date: new Date(year, month + 1, nextDay++), isOther: true });
+
+            cells.forEach((cData, i) => {
+                const cell = document.createElement('div'); cell.classList.add('day-cell');
+                if (cData.isOther) cell.classList.add('other-month'); if (i % 7 === 0 || i % 7 === 6) cell.classList.add('weekend');
+                const d = cData.date; if (!cData.isOther && year === today.getFullYear() && month === today.getMonth() && d.getDate() === today.getDate()) cell.classList.add('today');
+                const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                cell.setAttribute('data-date', dateString);
+                
+                const astro = getSunTimes(d, userLat, userLon);
+                const indDate = getIndianDate(d, astro.fraction);
+                
+                // Add moon attribute for the new mobile background feature
+                cell.setAttribute('data-moon', astro.moon);
+
+                cell.innerHTML = `
+                    <div class="day-top"><div class="date-number en-num">${d.getDate()}</div><div class="hindu-date">${indDate}</div></div>
+                    <div class="events-container"></div>
+                    <div class="astro-row"><span class="sun-times en-num"><span>${sunriseSVG}${astro.sunRise}</span> <span>${sunsetSVG}${astro.sunSet}</span></span><span class="moon-icon monotone-icon">${astro.moon}</span></div>
+                `;
+
+                cell.addEventListener('mousedown', () => { isDragging = true; dragStart = dateString; dragEnd = dateString; updateDragVisuals(); });
+                cell.addEventListener('mouseenter', () => { if (isDragging) { dragEnd = dateString; updateDragVisuals(); } });
+                cell.addEventListener('click', () => { if (dragStart !== dragEnd) return; if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; } else { clickTimer = setTimeout(() => { clickTimer = null; if(cell.querySelector('.events-container').children.length > 0) showAgendaModal(dateString); }, 250); } });
+                cell.addEventListener('dblclick', () => { clearTimeout(clickTimer); clickTimer = null; document.getElementById('ev-start').value = dateString; document.getElementById('ev-end').value = dateString; document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal'); });
+                grid.appendChild(cell);
+            });
+            document.body.addEventListener('mouseup', handleDragEnd); grid.addEventListener('mouseleave', () => { if(isDragging && !dragStart) { isDragging=false; clearDragVisuals(); } });
+            placeEventsOnGrid(); if(localStorage.getItem('minima_auto_sync') === 'true' && gapiInited) fetchGoogleEvents();
+        }
+
+        function handleDragEnd() {
+            if (isDragging) {
+                isDragging = false;
+                if (dragStart && dragEnd && dragStart !== dragEnd) { 
+                    let d1 = new Date(dragStart); let d2 = new Date(dragEnd);
+                    if(d1 > d2) { let temp = dragStart; dragStart = dragEnd; dragEnd = temp; }
+                    document.getElementById('ev-start').value = dragStart; document.getElementById('ev-end').value = dragEnd; document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal');
+                } clearDragVisuals(); dragStart = null; dragEnd = null;
             }
-        });
+        }
+
+        function updateDragVisuals() {
+            let d1 = new Date(dragStart), d2 = new Date(dragEnd); if(d1 > d2) { let t = d1; d1 = d2; d2 = t; }
+            document.querySelectorAll('.day-cell').forEach(cell => { let cellDate = new Date(cell.getAttribute('data-date')); if (cellDate >= d1 && cellDate <= d2) cell.classList.add('drag-selected'); else cell.classList.remove('drag-selected'); });
+        }
+        function clearDragVisuals() { document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('drag-selected')); }
+
+        function showAgendaModal(dateStr) {
+            activeAgendaDate = dateStr; let todaysEvents = [];
+            localEvents.forEach(e => {
+                let ds = new Date(e.start.split('T')[0]), de = new Date(e.end.split('T')[0]), target = new Date(dateStr);
+                if (target >= ds && target <= de) { let timeDisplay = 'All Day'; if(e.start.includes('T')) timeDisplay = e.start.split('T')[1]; const cal = myCalendars.find(c => c.id === (e.calendarId || 'default')); if(!cal || !cal.visible) return; todaysEvents.push({ id: e.id, summary: e.summary, isLocal: true, timeStr: timeDisplay, color: cal.color }); }
+            });
+            eventsList.forEach(e => { const evStart = e.start.dateTime || e.start.date; if(evStart && evStart.startsWith(dateStr)) { let timeDisplay = 'All Day'; if (e.start.dateTime) timeDisplay = new Date(e.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}); todaysEvents.push({ id: e.id, summary: e.summary, isGcal: true, timeStr: timeDisplay }); } });
+            if(todaysEvents.length === 0 && holidaysList.filter(h => h.date === dateStr).length === 0) return; 
+
+            const list = document.getElementById('agenda-list'); list.innerHTML = ''; document.getElementById('view-modal-title').innerHTML = `<span class="en-num">${new Date(dateStr).toLocaleDateString('en-US', {weekday: 'short', month: 'long', day: 'numeric'})}</span>`;
+            holidaysList.filter(h => h.date === dateStr).forEach(h => { let el = document.createElement('div'); el.className = 'agenda-item'; el.innerHTML = `<div style="display:flex; flex:1; align-items:flex-start; gap:8px;"><span class="ev-time">All Day</span> <div><span style="color:var(--holiday-color);">★</span> <strong style="color:var(--holiday-color);">${h.name}</strong></div></div>`; list.appendChild(el); });
+            todaysEvents.forEach(e => { let el = document.createElement('div'); el.className = 'agenda-item'; let icon = e.isGcal ? '🔵' : `<div style="width:12px;height:12px;border-radius:50%;background:${e.color}; margin-top:2px;"></div>`; el.innerHTML = `<div style="display:flex; flex:1; align-items:flex-start; gap:8px;"><span class="ev-time">${e.timeStr}</span> <div style="display:flex; gap:6px; align-items:flex-start;">${icon} <strong>${e.summary}</strong></div></div><button class="delete-ev-btn icon-btn" data-id="${e.id}" data-is-gcal="${e.isGcal ? 'true' : 'false'}" style="color: var(--holiday-color); padding: 6px; flex-shrink:0; background: transparent;" title="Delete Event">${trashSVG}</button>`; list.appendChild(el); });
+            openModal('view-modal');
+        }
+
+        async function fetchIndianHolidays(year) { try { const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/IN`); if(response.ok) holidaysList = await response.json(); else throw new Error(); } catch (err) { holidaysList = []; } }
+        function gapiLoaded() { gapi.load('client', initializeGapiClient); }
+        async function initializeGapiClient() { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); gapiInited = true; checkAuthReady(); }
+        window.onload = async () => { initControls(); await fetchIndianHolidays(currentDate.getFullYear()); updateCalendarView(); if(typeof google !== 'undefined') gisLoaded(); };
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error !== undefined) { localStorage.removeItem('minima_auto_sync'); resetSyncButton(); throw (resp); } localStorage.setItem('minima_auto_sync', 'true'); document.getElementById('btn-sync').textContent = "Signed In"; document.getElementById('btn-sync').disabled = true; document.getElementById('btn-push-google').disabled = false; await fetchGoogleEvents(); }, });
+            gisInited = true; checkAuthReady();
+        }
+
+        function checkAuthReady() {
+            const btn = document.getElementById('btn-sync'); document.getElementById('btn-push-google').addEventListener('click', pushLocalToGoogle);
+            if (gapiInited && gisInited) { btn.addEventListener('click', () => tokenClient.requestAccessToken({prompt: 'consent'})); if(localStorage.getItem('minima_auto_sync') === 'true') { btn.textContent = "Syncing..."; tokenClient.requestAccessToken({prompt: ''}); } }
+        }
+
+        function resetSyncButton() { document.getElementById('btn-sync').textContent = "Sign In"; document.getElementById('btn-sync').disabled = false; document.getElementById('btn-push-google').disabled = true; }
+
+        async function fetchGoogleEvents() {
+            if (!gapi.client.getToken()) return;
+            try { const response = await gapi.client.calendar.events.list({ 'calendarId': 'primary', 'timeMin': new Date(currentDate.getFullYear(), currentDate.getMonth()-1, 1).toISOString(), 'timeMax': new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59).toISOString(), 'showDeleted': false, 'singleEvents': true, 'maxResults': 250, 'orderBy': 'startTime' }); eventsList = response.result.items; placeEventsOnGrid(); } catch (err) { if(err.status === 401) { localStorage.removeItem('minima_auto_sync'); resetSyncButton(); } }
+        }
+
+        async function pushLocalToGoogle() {
+            if (!gapi.client.getToken()) return; const btn = document.getElementById('btn-push-google'); btn.textContent = "Pushing...";
+            for (let ev of localEvents) {
+                if(!ev.isSynced) {
+                    try {
+                        let resource = { summary: ev.summary };
+                        if (ev.start.includes('T')) { const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; resource.start = { dateTime: ev.start + ':00', timeZone: timeZone }; resource.end = { dateTime: ev.end + ':00', timeZone: timeZone }; } 
+                        else { resource.start = { date: ev.start }; resource.end = { date: new Date(new Date(ev.end).getTime() + 86400000).toISOString().split('T')[0] }; }
+                        await gapi.client.calendar.events.insert({ 'calendarId': 'primary', 'resource': resource }); ev.isSynced = true; 
+                    } catch(e) { console.error("Failed to push", e); }
+                }
+            }
+            localStorage.setItem('mytime_events', JSON.stringify(localEvents)); btn.textContent = "Pushed ✓"; setTimeout(() => btn.textContent = "Push Offline Events", 2000); fetchGoogleEvents(); 
+        }
+
+        function placeEventsOnGrid() {
+            document.querySelectorAll('.event, .holiday').forEach(e => e.remove());
+            holidaysList.forEach(holiday => { const cell = document.querySelector(`.day-cell[data-date="${holiday.date}"] .events-container`); if(cell) { const el = document.createElement('div'); el.className = 'holiday'; el.textContent = holiday.name; el.title = holiday.name; cell.appendChild(el); } });
+            eventsList.forEach(event => { const startStr = event.start.dateTime || event.start.date; if (!startStr) return; const dateKey = startStr.split('T')[0]; const cell = document.querySelector(`.day-cell[data-date="${dateKey}"] .events-container`); if (cell) { const el = document.createElement('div'); el.className = 'event'; let timeStr = event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}) + ' ' : ''; el.textContent = `${timeStr}${event.summary}`; el.title = el.textContent; cell.appendChild(el); } });
+            localEvents.forEach(ev => {
+                const cal = myCalendars.find(c => c.id === (ev.calendarId || 'default')); if(!cal || !cal.visible) return;
+                let d1 = new Date(ev.start.split('T')[0]); let d2 = new Date(ev.end.split('T')[0]);
+                document.querySelectorAll('.day-cell').forEach(cell => {
+                    let cDate = new Date(cell.getAttribute('data-date'));
+                    if (cDate >= d1 && cDate <= d2) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'event local-event'; el.style.backgroundColor = cal.color; let timeStr = (ev.start.includes('T') && cDate.getTime() === d1.getTime()) ? ev.start.split('T')[1] + ' ' : ''; el.textContent = `${timeStr}${ev.summary}`; container.appendChild(el); }
+                });
+            });
+        }
+    </script>
+    <script>
+        // Register Service Worker for PWA / Offline capabilities
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered!', reg))
+                    .catch(err => console.error('Service Worker Registration Failed!', err));
+            });
+        }
     </script>
 </body>
 </html>
