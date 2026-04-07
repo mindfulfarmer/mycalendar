@@ -11,7 +11,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,76 +20,78 @@
     <style>
         /* --- PANTONE BORDERLESS COLOR SCHEMES --- */
         :root {
-            --bg-wallpaper: #E6F3FC; 
+            --bg-wallpaper: #F5F5F5; 
             --glass-bg: #FFFFFF;
-            --cell-bg: #F0F7FD;
+            --cell-bg: #FFFFFF;
             --modal-bg: #FFFFFF;
-            --text-primary: #002B49; 
-            --text-secondary: #005696;
+            --text-primary: #000000; 
+            --text-secondary: #666666; 
             
             --accent-color: #0072CE; 
             --accent-hover: #005AA3;
             
             --holiday-color: #E31837; 
-            --btn-bg: #E0EFFF;
-            --btn-hover: #CCE4FF;
-            --cell-hover: #E0EFFF;
+            --btn-bg: #F0F0F0;
+            --btn-hover: #E4E4E4;
+            --cell-hover: #F9F9F9;
             
-            /* Distinct warm shade for weekends */
-            --weekend-bg: #FFF2D7; 
+            --weekend-bg: #FAFAFA; 
             
-            --event-bg: rgba(204, 228, 255, 0.45); 
-            --holiday-bg: rgba(252, 232, 235, 0.45);
+            --event-bg: rgba(0, 114, 206, 0.1); 
+            --holiday-bg: rgba(227, 24, 55, 0.1);
             --drag-bg: rgba(0, 114, 206, 0.2);
 
-            /* New distinct note color */
-            --note-text-color: #008080; /* Teal for light theme */
-            --grid-dot-color: rgba(0, 114, 206, 0.2);
+            --note-text-color: #333333; 
+            --grid-dot-color: rgba(0, 0, 0, 0.05); 
+            --panel-shadow: rgba(0,0,0,0.15);
+            
+            /* Slight bottom shadow for light mode */
+            --card-shadow: 0 3px 6px rgba(0,0,0,0.06); 
         }
 
         [data-theme="dark"] {
             --bg-wallpaper: #000000;
-            --glass-bg: #0A0A0A;
-            --cell-bg: #141414;
-            --modal-bg: #111111;
-            --text-primary: #F0F0F0;
-            --text-secondary: #888888;
+            --glass-bg: #111111;
+            --cell-bg: #1A1A1A;
+            --modal-bg: #1A1A1A;
+            --text-primary: #FFFFFF; 
+            --text-secondary: #AAAAAA;
             
-            --holiday-color: #FF3333;
-            --btn-bg: #222222;
-            --btn-hover: #333333;
-            --cell-hover: #1E1E1E;
+            --holiday-color: #FF4444;
+            --btn-bg: #2A2A2A;
+            --btn-hover: #3A3A3A;
+            --cell-hover: #222222;
             
-            /* Distinct warm shade for weekends in dark mode */
-            --weekend-bg: rgba(255, 193, 7, 0.12); 
+            --weekend-bg: #151515; 
             
-            --event-bg: rgba(0, 59, 111, 0.45);
-            --holiday-bg: rgba(74, 17, 17, 0.45);
+            --event-bg: rgba(0, 114, 206, 0.2);
+            --holiday-bg: rgba(255, 68, 68, 0.15);
             --drag-bg: rgba(0, 114, 206, 0.3);
 
-            /* New distinct note color for dark theme */
-            --note-text-color: #A0E6E6; /* Light Teal for dark theme */
-            --grid-dot-color: rgba(255, 255, 255, 0.15);
+            --note-text-color: #DDDDDD; 
+            --grid-dot-color: rgba(255, 255, 255, 0.05); 
+            --panel-shadow: rgba(0,0,0,0.6);
+            
+            /* Slight bottom shadow for dark mode */
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.35); 
         }
 
-        /* STRICT NO SCROLL GLOBALS & PWA ZOOM PREVENTION */
         html, body {
             overflow: hidden !important; 
             height: 100vh; width: 100vw; margin: 0; padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #111; /* Dark background for the area outside the app on desktop */
+            background: #111; 
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased; letter-spacing: 0.015em;
-            touch-action: pan-x pan-y; /* Prevents double-tap/pinch zoom */
-            display: flex; /* Centers the app on desktop */
+            touch-action: pan-x pan-y; 
+            display: flex; 
             justify-content: center;
             align-items: center;
         }
 
         * { box-sizing: inherit; margin: 0; padding: 0; border: none !important; outline: none !important; }
-
-        .en-num { font-family: 'Be Vietnam Pro', sans-serif !important; }
+        .en-num { font-family: 'Inter', sans-serif !important; }
 
         .app-container {
             width: 100vw; height: 100vh;
@@ -97,6 +99,7 @@
             background: var(--glass-bg);
             display: flex; flex-direction: column; overflow: hidden;
             transition: background 0.4s ease;
+            position: relative;
         }
 
         /* --- HEADER --- */
@@ -108,13 +111,13 @@
 
         .header-left { display: flex; align-items: center; flex-grow: 1; min-width: 0; }
         .header-left h2 { 
-            font-family: 'Be Vietnam Pro', sans-serif; font-size: 1.8rem; font-weight: 800; 
+            font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 800; 
             color: var(--text-primary); cursor: pointer; padding: 6px 12px;
             border-radius: 8px; transition: background 0.2s ease; margin-left: -8px; 
         }
         .header-left h2:hover { background: var(--btn-hover); }
 
-        .header-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+        .header-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
 
         button {
             background: var(--btn-bg); color: var(--text-primary);
@@ -132,43 +135,42 @@
         .header-right button:hover:not(:disabled) { background: var(--btn-hover); }
         .icon-btn { padding: 8px; border-radius: 8px; }
 
-        /* --- CALENDAR BODY & GRID --- */
+        /* --- CALENDAR BODY --- */
         .calendar-body { 
             display: flex; flex-direction: column; flex-grow: 1; 
-            overflow: hidden; 
-            padding: 0; 
-            touch-action: pan-y; /* Crucial for vertical swiping */
+            overflow: hidden; padding: 0; touch-action: pan-y; 
         }
 
         .weekdays {
             display: grid; grid-template-columns: repeat(7, 1fr);
-            gap: 8px; 
-            text-align: center; 
-            padding: 16px 0 8px 0; 
+            gap: 8px; text-align: center; padding: 16px 0 8px 0; 
             font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.05em; color: var(--text-primary); flex-shrink: 0;
-            background: transparent; align-items: center; justify-items: center;
         }
+
+        .weekday-label.today-label { color: var(--accent-color); }
 
         .calendar-grid {
             display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); 
-            gap: 8px; flex-grow: 1; overflow: hidden; 
+            gap: 8px; flex-grow: 1; overflow: hidden; padding-bottom: 8px;
         }
 
-        /* --- BORDERLESS DATE CARDS --- */
+        /* --- DATE CARDS --- */
         .day-cell {
             position: relative; background: var(--cell-bg); 
-            border-radius: 0; 
             padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden;
-            transition: background 0.2s ease; user-select: none; cursor: pointer;
-            z-index: 1; 
+            transition: background 0.2s ease; user-select: none; cursor: pointer; z-index: 1; 
+            
+            /* ADDED SHADOW AND BORDER RADIUS FOR CARDS */
+            box-shadow: var(--card-shadow);
+            border-radius: 8px;
         }
         .day-cell:hover { background: var(--cell-hover); }
         .day-cell.drag-selected { background: var(--drag-bg) !important; }
         
         .show-weekends .day-cell.weekend { background: var(--weekend-bg); }
         .show-weekends .day-cell.weekend:hover { background: var(--cell-hover); }
-        .day-cell.other-month { background: transparent; opacity: 0.2; }
+        .day-cell.other-month { background: transparent; opacity: 0.2; box-shadow: none; }
 
         .day-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; flex-shrink: 0; }
         .date-number { 
@@ -179,69 +181,116 @@
         .day-cell.today .date-number { background-color: var(--accent-color); color: #ffffff; }
 
         body:not(.show-hindu-date) .hindu-date { display: none !important; }
-        
         .hindu-date {
             font-size: clamp(0.6rem, 1vw, 0.75rem); color: var(--text-secondary);
-            opacity: 1; text-align: right; line-height: 1.2;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;
-            margin-top: 4px; font-weight: 600;
+            text-align: right; line-height: 1.2; white-space: nowrap; overflow: hidden; 
+            text-overflow: ellipsis; max-width: 65%; margin-top: 4px; font-weight: 600;
         }
 
-        /* --- ASTRO ROW --- */
         .astro-row {
             display: none; justify-content: space-between; align-items: center;
             font-size: clamp(0.55rem, 0.9vw, 0.7rem); color: var(--text-secondary); font-weight: 600;
             margin-top: 4px; opacity: 0.9; flex-shrink: 0; padding-top: 4px;
         }
-
         .show-sun .astro-row, .show-moon .astro-row { display: flex; }
         .sun-times, .moon-icon { display: none; }
         .show-sun .sun-times { display: flex; align-items: center; gap: 6px; }
         .show-moon .moon-icon { display: block; filter: grayscale(100%) contrast(1.2); }
         .astro-svg { width: 1.1em; height: 1.1em; vertical-align: middle; margin-right: 2px; opacity: 0.8; }
-        
         .day-cell.has-events .astro-row { display: none !important; }
 
-        /* --- SCROLLABLE EVENTS CONTAINER --- */
+        /* --- EVENTS CONTAINER --- */
         .events-container {
             display: flex; flex-direction: column; gap: 4px; flex-grow: 1;
             overflow-y: auto; padding-right: 2px; margin-top: 2px;
-            -ms-overflow-style: none; scrollbar-width: none;
-            min-height: 0; /* Critical for vertical scrolling to work inside a flex container */
-            pointer-events: auto; /* Allow mousewheel within this area on desktop */
+            -ms-overflow-style: none; scrollbar-width: none; min-height: 0; pointer-events: auto;
         }
         .events-container::-webkit-scrollbar { display: none; }
 
         .event, .holiday {
-            font-size: clamp(0.55rem, 1.2vw, 0.75rem); /* Responsive Font Size */
-            font-weight: 600; padding: 2px 6px; 
-            border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+            font-size: clamp(0.55rem, 1.2vw, 0.75rem); 
+            font-weight: 600; padding: 2px 6px; border-radius: 4px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
         }
         .event { background: var(--event-bg); color: var(--accent-color); }
         .holiday { background: var(--holiday-bg); color: var(--holiday-color); }
         .local-event { color: white; }
         
-        /* Note Previews on Date Card */
+        /* Note Previews */
         .note-preview {
-            font-size: clamp(0.55rem, 1.2vw, 0.75rem); /* Responsive Font Size */
-            font-weight: 500; padding: 2px 4px; 
-            color: var(--note-text-color, #008080); background: transparent; 
+            font-size: clamp(0.5rem, 1vw, 0.65rem) !important; font-weight: 400; padding: 2px 4px; 
+            color: var(--note-text-color); background: transparent; 
             border-left: 2px solid var(--accent-color); margin-left: 2px;
-            white-space: normal; word-wrap: break-word; line-height: 1.4;
-            flex-shrink: 0;
-            margin-top: 6px; /* Top padding to separate from events */
+            line-height: 1.4; flex-shrink: 0; margin-top: 6px; 
         }
-        .note-preview ul, .note-preview ol {
-            padding-left: 16px; margin: 2px 0;
+        .note-preview ul, .note-preview ol { 
+            padding-left: 0px; margin: 2px 0; 
         }
         .note-preview li {
-            margin-bottom: 2px;
+            margin-bottom: 2px; white-space: nowrap; overflow: hidden; 
+            text-overflow: ellipsis; list-style-position: inside; 
+        }
+        .note-preview .cb-wrapper {
+            display: flex; align-items: center; margin: 2px 0; white-space: nowrap; overflow: hidden; vertical-align: baseline;
+        }
+        .note-preview .cb-wrapper span {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: inline-block; flex-grow: 1;
+            font-size: clamp(0.5rem, 1vw, 0.65rem) !important; font-weight: 400;
         }
         .note-preview input[type="checkbox"] {
-            margin-right: 4px; vertical-align: middle;
+            margin-right: 4px !important; margin-top: 6px !important; flex-shrink: 0;
+            width: 10px !important; height: 10px !important; pointer-events: none; 
+            accent-color: #999999;
         }
+        .note-preview input[type="checkbox"]:checked {
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+        .note-preview input[type="checkbox"]:checked + span { text-decoration: line-through; opacity: 0.6; }
 
-        /* --- BORDERLESS MODALS & FORMS --- */
+        /* --- SIDE PANEL (NOTES) --- */
+        #notes-side-panel {
+            position: absolute; top: 0; right: 0; height: 100%; width: 320px; max-width: 85vw;
+            background: var(--modal-bg); 
+            
+            /* Removed shadow when closed, added border for clean edge */
+            box-shadow: none; 
+            border-left: 1px solid var(--btn-bg);
+            
+            transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+            z-index: 500; display: flex; flex-direction: column;
+        }
+        #notes-side-panel.open { 
+            transform: translateX(0); 
+            /* Only show shadow when panel is open */
+            box-shadow: -5px 0 25px var(--panel-shadow); 
+        }
+        .panel-header {
+            padding: 20px; border-bottom: 1px solid var(--btn-bg); display: flex; 
+            justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        /* BE VIETNAM PRO HEADER */
+        .panel-header h2 { font-size: 1.2rem; font-weight: 700; font-family: 'Inter', sans-serif;}
+        .panel-content {
+            flex-grow: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px;
+        }
+        .panel-content::-webkit-scrollbar { width: 6px; }
+        .panel-content::-webkit-scrollbar-thumb { background: var(--btn-hover); border-radius: 10px; }
+        
+        .panel-note-card {
+            background: var(--cell-bg); border: 1px solid var(--btn-bg);
+            border-radius: 12px; padding: 12px; cursor: pointer; transition: background 0.2s;
+        }
+        .panel-note-card:hover { background: var(--cell-hover); }
+        .panel-note-date { font-size: 0.8rem; font-weight: 700; color: var(--accent-color); margin-bottom: 8px; }
+        .panel-note-body { font-size: 0.8rem; line-height: 1.5; color: var(--note-text-color); text-overflow: ellipsis; list-style-position: inside; }
+        
+        .panel-note-body .cb-wrapper { display: flex; align-items: flex-start; margin: 4px 0; }
+        .panel-note-body input[type="checkbox"] { margin-top: 0.2rem; margin-right: 8px; width: 14px; height: 14px; cursor: pointer; pointer-events: auto; font-size: clamp(0.5rem, 1vw, 0.65rem) !important; font-weight: 400;}
+        .panel-note-body input[type="checkbox"]:checked + span { text-decoration: line-through; opacity: 0.6; }
+
+        /* --- MODALS --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -252,23 +301,17 @@
         .modal-content {
             background: var(--modal-bg); border-radius: 16px; 
             width: 90%; max-width: 400px; box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column;
-            overflow: hidden; 
+            display: flex; flex-direction: column; overflow: hidden; 
         }
-        
         .modal-padding-wrapper { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { font-size: 1rem; font-weight: 700; font-family: 'Outfit', sans-serif;}
-        
-        .settings-body {
-            overflow-y: auto; padding: 12px 20px 20px 20px;
-            display: flex; flex-direction: column; gap: 10px; max-height: calc(85vh - 60px);
-        }
+        /* BE VIETNAM PRO HEADER */
+        .modal-header h2 { font-size: 1.1rem; font-weight: 700; font-family: 'Inter', sans-serif;}
+
+        .settings-body { overflow-y: auto; padding: 12px 20px 20px 20px; display: flex; flex-direction: column; gap: 10px; max-height: calc(85vh - 60px); }
         .settings-body::-webkit-scrollbar { width: 6px; }
-        .settings-body::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
-        .settings-body::-webkit-scrollbar-thumb { background: var(--btn-hover, #ccc); border-radius: 10px; }
-        .settings-body::-webkit-scrollbar-thumb:hover { background: var(--text-secondary, #999); }
+        .settings-body::-webkit-scrollbar-thumb { background: var(--btn-hover); border-radius: 10px; }
 
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
         .setting-info { display: flex; flex-direction: column; gap: 2px; }
@@ -279,147 +322,72 @@
         .form-row { display: flex; gap: 10px; }
         .form-row .form-group { flex: 1; }
         .form-group label { font-size: 0.8rem; color: var(--text-primary); font-weight: 600;}
-        
         .form-group input, .form-group select, .setting-row select { 
             font-family: 'Inter', sans-serif; padding: 10px 12px; border-radius: 8px; font-weight: 500;
             background: var(--btn-bg); color: var(--text-primary); font-size: 0.85rem;
-            cursor: pointer; transition: background 0.2s ease;
         }
-        .form-group input:hover, .form-group select:hover, .setting-row select:hover { background: var(--btn-hover); }
         
-        select { appearance: auto; -webkit-appearance: auto; padding-right: 8px !important; }
-
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-        .month-btn {
-            background: var(--btn-bg); color: var(--text-primary); padding: 14px 8px; border-radius: 8px; 
-            text-align: center; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease;
-        }
+        .month-btn { background: var(--btn-bg); color: var(--text-primary); padding: 14px 8px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .month-btn:hover { background: var(--accent-color); color: #fff; }
 
         .agenda-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 4px; -ms-overflow-style: none; scrollbar-width: none;}
         .agenda-list::-webkit-scrollbar { display: none; }
-        
-        .agenda-item { 
-            background: var(--btn-bg); padding: 12px; border-radius: 10px; 
-            font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-            line-height: 1.4; color: var(--text-primary); font-weight: 600;
-        }
-        .ev-time { font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.8rem; color: var(--text-secondary); min-width: 65px; text-align: right; margin-right: 8px; font-weight: 700;}
+        .agenda-item { background: var(--btn-bg); padding: 12px; border-radius: 10px; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 8px; line-height: 1.4; font-weight: 600;}
+        .ev-time { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: var(--text-secondary); min-width: 65px; text-align: right; margin-right: 8px; font-weight: 700;}
 
-        .toggle-switch {
-            position: relative; width: 36px; height: 20px; background: var(--btn-bg); border-radius: 12px; cursor: pointer; transition: 0.3s;
-        }
-        .toggle-switch::after {
-            content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+        .toggle-switch { position: relative; width: 36px; height: 20px; background: var(--btn-bg); border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .toggle-switch.active { background: var(--accent-color); }
         .toggle-switch.active::after { transform: translateX(16px); }
 
         /* Notes Editor Toolbar & Area */
-        .notes-wrapper {
-            display: flex; flex-direction: column; flex-grow: 1; position: relative; margin-top: 8px;
-        }
-        
+        .notes-wrapper { display: flex; flex-direction: column; flex-grow: 1; position: relative; margin-top: 8px; }
         .editor-toolbar {
             display: flex; gap: 4px; background: var(--btn-bg); padding: 6px 8px; 
-            border-radius: 8px 8px 0 0; border: 1px solid var(--btn-bg); border-bottom: none;
-            flex-shrink: 0; align-items: center;
+            border-radius: 8px 8px 0 0; flex-shrink: 0; align-items: center; overflow-x: auto;
         }
-        .editor-toolbar button { 
-            padding: 4px 6px; min-width: 28px; display: flex; align-items: center; 
-            justify-content: center; background: transparent; border-radius: 6px;
-        }
+        .editor-toolbar::-webkit-scrollbar { display: none; }
+        .editor-toolbar button { padding: 4px 6px; min-width: 28px; display: flex; align-items: center; justify-content: center; background: transparent; border-radius: 6px; }
         .editor-toolbar button:hover { background: var(--btn-hover); }
 
         .notes-area {
             flex-grow: 1; border: 1px solid var(--btn-bg); border-radius: 0 0 8px 8px; padding: 12px; 
-            background: var(--modal-bg); color: var(--text-primary); font-size: 0.85rem; line-height: 1.6rem;
+            background: var(--modal-bg); color: var(--text-primary); font-size: 0.85rem; line-height: 1.4rem;
             
-            /* Dotted Grid Background */
-            background-image: radial-gradient(var(--grid-dot-color) 1.5px, transparent 1.5px);
-            background-size: 1.6rem 1.6rem;
-            background-position: 0 0;
+            background-image: radial-gradient(var(--grid-dot-color) 1px, transparent 1px);
+            background-size: 1.4rem 1.4rem; background-position: 0 0;
             
             overflow-y: auto; outline: none; min-height: 120px;
         }
         .notes-area:focus { border-color: var(--accent-color); }
-        
-        /* Make scrollbar visible on note area */
-        .notes-area::-webkit-scrollbar {
-            width: 6px;
-            display: block;
-        }
-        .notes-area::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .notes-area::-webkit-scrollbar-thumb {
-            background: var(--btn-hover, #ccc);
-            border-radius: 10px;
-        }
-        .notes-area::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary, #999);
-        }
+        .notes-area::-webkit-scrollbar { width: 6px; display: block; }
+        .notes-area::-webkit-scrollbar-thumb { background: var(--btn-hover); border-radius: 10px; }
 
-        .notes-area ul, .notes-area ol {
-            padding-left: 24px; margin: 0;
-        }
-        .notes-area li {
-            margin: 0; line-height: 1.6rem;
-        }
+        .notes-area ul, .notes-area ol { padding-left: 20px; margin: 0; }
+        .notes-area li { margin: 2px 0; line-height: 1.4rem; padding-left: 4px; }
 
-        /* Checkbox styling within Notes */
-        .note-cb { margin-right: 6px; vertical-align: middle; cursor: pointer; }
-        
-        .notes-area .cb-wrapper {
-            display: flex;
-            align-items: flex-start;
-            margin: 2px 0;
-        }
-        .notes-area input[type="checkbox"].note-cb + span {
-            display: inline-block;
-            flex-grow: 1;
-        }
+        .notes-area .cb-wrapper { display: flex; align-items: flex-start; margin: 2px 0; line-height: 1.4rem; }
+        .notes-area input[type="checkbox"].note-cb { margin-top: 0.25rem; margin-right: 8px; cursor: pointer; flex-shrink: 0; width: 14px; height: 14px; }
+        .notes-area .cb-wrapper span { display: inline-block; flex-grow: 1; outline: none; }
+        .notes-area input[type="checkbox"]:checked + span { text-decoration: line-through; opacity: 0.6; }
 
-        /* Mobile View Overrides */
         @media (max-width: 600px) {
-            .calendar-header { padding: 16px 12px; min-height: 75px; flex-wrap: nowrap !important; gap: 6px; }
-            .header-left { width: auto; justify-content: flex-start; }
-            .header-right { width: auto; justify-content: flex-end; gap: 4px; }
+            .calendar-header { padding: 16px 12px; min-height: 75px; gap: 6px; }
             .header-left h2 { font-size: 1.5rem; padding: 4px 8px; margin-left: 0;}
-
+            .header-right { gap: 4px; }
             .icon-btn svg { width: 16px; height: 16px; }
             button { padding: 6px 10px; font-size: 0.8rem; }
-
-            .calendar-grid { gap: 2px; }
+            .calendar-grid { gap: 4px; padding-bottom: 4px; }
             .weekdays { gap: 2px; padding: 8px 0; font-size: 0.65rem; }
             .day-cell { padding: 4px; padding-bottom: 20px; } 
-
-            .day-top { flex-direction: column; align-items: center; justify-content: center; margin-bottom: 2px; }
+            .day-top { flex-direction: column; align-items: center; margin-bottom: 2px; }
             .date-number { font-size: 0.9rem; width: 20px; height: 20px; }
-            
-            .hindu-date { text-align: center; max-width: 100%; margin-top: 6px; padding-top: 2px; font-size: 0.55rem; }
-
+            .hindu-date { text-align: center; max-width: 100%; margin-top: 6px; font-size: 0.55rem; }
             .event, .holiday, .note-preview { padding: 2px; }
-            
-            .astro-row { 
-                position: absolute; bottom: 4px; left: 0; right: 0; 
-                justify-content: center; width: 100%; padding: 0; font-size: 0.5rem;
-            }
-            
+            .astro-row { position: absolute; bottom: 4px; left: 0; right: 0; justify-content: center; width: 100%; font-size: 0.5rem; }
             .show-moon .moon-icon { display: none !important; }
-
-            .show-moon .day-cell::before {
-                content: attr(data-moon);
-                position: absolute;
-                top: 50%; 
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 3rem;
-                opacity: 0.15; 
-                z-index: -1;
-                filter: grayscale(50%); 
-                pointer-events: none;
-            }
+            .show-moon .day-cell::before { content: attr(data-moon); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; opacity: 0.15; z-index: -1; filter: grayscale(50%); pointer-events: none; }
         }
     </style>
 </head>
@@ -435,13 +403,25 @@
                 <button id="btn-next" class="icon-btn" aria-label="Next Month"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"></path></svg></button>
                 <button id="btn-today">Today</button>
                 <button id="btn-settings" class="icon-btn" aria-label="Settings"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                <button id="btn-toggle-panel" class="icon-btn" aria-label="Notes Panel"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="3" x2="16" y2="21"></line><line x1="8" y1="9" x2="12" y2="9"></line><line x1="8" y1="13" x2="12" y2="13"></line><line x1="8" y1="17" x2="12" y2="17"></line></svg></button>
             </div>
         </header>
 
         <section class="calendar-body">
-            <div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+            <div class="weekdays" id="weekdays-header">
+                <span class="weekday-label">Sun</span><span class="weekday-label">Mon</span><span class="weekday-label">Tue</span><span class="weekday-label">Wed</span><span class="weekday-label">Thu</span><span class="weekday-label">Fri</span><span class="weekday-label">Sat</span>
+            </div>
             <div id="calendar-grid" class="calendar-grid"></div>
         </section>
+
+        <aside id="notes-side-panel">
+            <div class="panel-header">
+                <h2>All Notes</h2>
+                <button class="icon-btn" id="close-side-panel" style="background:transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="panel-content" id="notes-panel-content">
+            </div>
+        </aside>
     </main>
 
     <div id="view-modal" class="modal-overlay hidden">
@@ -457,8 +437,7 @@
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0;">
-                    <span id="view-modal-title" class="en-num" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);"></span>
-                    <div id="modal-sun-times" class="en-num" style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);"></div>
+                    <span id="view-modal-title" class="en-num" style="font-weight: 800; font-size: 1.5rem; color: var(--text-primary); letter-spacing: -0.02em;"></span>                    <div id="modal-sun-times" class="en-num" style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);"></div>
                 </div>
                 
                 <div id="agenda-list" class="agenda-list" style="max-height: 150px; flex-shrink: 0;"></div>
@@ -472,6 +451,8 @@
                         <button class="icon-btn" onclick="toggleBullet()" title="Bullets"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></button>
                         <button class="icon-btn" onclick="toggleNumber()" title="Numbers"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></button>
                         <button class="icon-btn" onclick="insertCheckbox()" title="Checkbox"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                        <div style="width: 1px; height: 16px; background: var(--text-secondary); opacity: 0.3; margin: 0 4px;"></div>
+                        <button class="icon-btn" onclick="indentList()" title="Indent/Nest"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="6" x2="21" y2="6"></line><line x1="12" y1="12" x2="21" y2="12"></line><line x1="12" y1="18" x2="21" y2="18"></line><polyline points="3 8 7 12 3 16"></polyline></svg></button>
                     </div>
                     <div id="day-notes-editor" class="notes-area" contenteditable="true" placeholder="Type your notes here..."></div>
                 </div>
@@ -506,33 +487,19 @@
                 <h2>Preferences</h2>
                 <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
-            
             <div class="settings-body">
                 <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 6px; border-bottom: 1px solid var(--btn-bg); padding-bottom: 10px;">
-                    <div class="setting-info" style="width: 100%;">
-                        <span class="setting-title">Import Calendars (.ics)</span>
-                        <span class="setting-desc">Import events from Thunderbird, Outlook, Apple</span>
-                        <input type="file" id="ics-upload" accept=".ics" style="margin-top: 8px; width: 100%; font-size: 0.8rem; background: transparent; padding: 0;">
-                    </div>
+                    <div class="setting-info" style="width: 100%;"><span class="setting-title">Import Calendars (.ics)</span><input type="file" id="ics-upload" accept=".ics" style="margin-top: 8px; width: 100%; font-size: 0.8rem; background: transparent; padding: 0;"></div>
                 </div>
-
                 <div class="setting-row" style="flex-direction: column; align-items: flex-start; border-bottom: 1px solid var(--btn-bg); padding-bottom: 10px;">
-                    <span class="setting-title" style="margin-bottom: 4px;">My Calendars</span>
-                    <div id="calendars-list" style="width: 100%;"></div>
+                    <span class="setting-title" style="margin-bottom: 4px;">My Calendars</span><div id="calendars-list" style="width: 100%;"></div>
                 </div>
-
                 <div class="setting-row" style="margin-top: 4px;">
-                    <div class="setting-info"><span class="setting-title">Indian Dates</span><span class="setting-desc">Show Tithi and Maas</span></div>
-                    <div id="toggle-hindu" class="toggle-switch active"></div>
+                    <div class="setting-info"><span class="setting-title">Indian Dates</span><span class="setting-desc">Show Tithi and Maas</span></div><div id="toggle-hindu" class="toggle-switch active"></div>
                 </div>
                 <div class="setting-row">
                     <div class="setting-info"><span class="setting-title">Dates Language</span></div>
-                    <select id="lang-select">
-                        <option value="bn">Bengali (বাংলা)</option>
-                        <option value="hi">Hindi (हिन्दी)</option>
-                        <option value="as">Assamese (অসমীয়া)</option>
-                        <option value="en">English</option>
-                    </select>
+                    <select id="lang-select"><option value="bn">Bengali (বাংলা)</option><option value="hi">Hindi (हिन्दी)</option><option value="as">Assamese (অসমীয়া)</option><option value="en">English</option></select>
                 </div>
                 <div class="setting-row">
                     <div class="setting-info"><span class="setting-title">Dark Mode</span></div><div id="toggle-theme" class="toggle-switch"></div>
@@ -541,40 +508,18 @@
                     <div class="setting-info"><span class="setting-title">Highlight Weekends</span></div><div id="toggle-weekends" class="toggle-switch active"></div>
                 </div>
                 <div class="setting-row">
-                    <div class="setting-info"><span class="setting-title">Sun Times (GPS)</span><span class="setting-desc">Requires location permission</span></div><div id="toggle-sun" class="toggle-switch active"></div>
+                    <div class="setting-info"><span class="setting-title">Sun Times (GPS)</span></div><div id="toggle-sun" class="toggle-switch active"></div>
                 </div>
                 <div class="setting-row">
                     <div class="setting-info"><span class="setting-title">Lunar Phases</span></div><div id="toggle-moon" class="toggle-switch active"></div>
                 </div>
+                <div class="setting-row" style="margin-top: 6px;"><div class="setting-info"><span class="setting-title">Google Calendar</span></div><button id="btn-sync" class="btn-primary" style="padding:6px 12px; font-size:0.8rem;">Sign In</button></div>
+                <div class="setting-row"><div class="setting-info"><span class="setting-title">Backup All Data</span></div><button id="btn-backup-all" style="padding:6px 12px; font-size:0.8rem;">Backup JSON</button></div>
                 
-                <div class="setting-row" style="margin-top: 6px;">
-                    <div class="setting-info">
-                        <span class="setting-title">Notes Backup Status</span>
-                        <span class="setting-desc">Auto-saving to Local Storage (Browser)</span>
-                    </div>
-                </div>
-
-                <div class="setting-row" style="margin-top: 6px;">
-                    <div class="setting-info"><span class="setting-title">Google Calendar</span><span class="setting-desc">Sync personal events</span></div>
-                    <button id="btn-sync" class="btn-primary" style="padding:6px 12px; font-size:0.8rem;">Sign In</button>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info"><span class="setting-title">Push Offline Events</span><span class="setting-desc">Send local to Google</span></div>
-                    <button id="btn-push-google" style="padding:6px 12px; font-size:0.8rem;" disabled>Push</button>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info"><span class="setting-title">Backup All Data</span><span class="setting-desc">Export events, calendars & notes</span></div>
-                    <button id="btn-backup-all" style="padding:6px 12px; font-size:0.8rem;">Backup JSON</button>
-                </div>
-                <div class="setting-row">
-                    <div class="setting-info"><span class="setting-title">Export (.ics)</span><span class="setting-desc">Backup to Thunderbird/Apple</span></div>
-                    <button id="btn-export" style="padding:6px 12px; font-size:0.8rem;">Export ICS</button>
-                </div>
-
-                <div style="text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6;">
-                    <div style="font-weight: 600;">Designed by Bhaskarjyoti Das</div>
-                    <div><a href="https://github.com/mindfulfarmer/" target="_blank" style="color: var(--accent-color); text-decoration: none;">github.com/mindfulfarmer/</a></div>
-                    <div style="margin-top: 6px;">Made in India 🇮🇳</div>
+                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--btn-bg); text-align: center; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6; flex-shrink: 0;">
+                    <div>Designed by Bhaskarjyoti Das</div>
+                    <div><a href="https://github.com/mindfulfarmer" target="_blank" style="color: var(--accent-color); text-decoration: none;">https://github.com/mindfulfarmer</a></div>
+                    <div>Made in India 🇮🇳</div>
                 </div>
             </div>
         </div>
@@ -587,31 +532,16 @@
                     <h2>Add Event</h2>
                     <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
-                <div class="form-group">
-                    <label>Event Title</label>
-                    <input type="text" id="ev-title" placeholder="Meeting with John" autocomplete="off">
+                <div class="form-group"><label>Event Title</label><input type="text" id="ev-title" autocomplete="off"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Start Date</label><input type="date" id="ev-start" class="en-num"></div>
+                    <div class="form-group"><label>Time (Opt)</label><input type="time" id="ev-start-time" class="en-num"></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Start Date</label>
-                        <input type="date" id="ev-start" class="en-num">
-                    </div>
-                    <div class="form-group">
-                        <label>Start Time (Opt)</label>
-                        <input type="time" id="ev-start-time" class="en-num">
-                    </div>
+                    <div class="form-group"><label>End Date</label><input type="date" id="ev-end" class="en-num"></div>
+                    <div class="form-group"><label>Time (Opt)</label><input type="time" id="ev-end-time" class="en-num"></div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>End Date</label>
-                        <input type="date" id="ev-end" class="en-num">
-                    </div>
-                    <div class="form-group">
-                        <label>End Time (Opt)</label>
-                        <input type="time" id="ev-end-time" class="en-num">
-                    </div>
-                </div>
-                <button id="btn-save-event" class="btn-primary" style="margin-top: 8px; padding: 12px; width: 100%;">Save Local Event</button>
+                <button id="btn-save-event" class="btn-primary" style="margin-top: 8px; padding: 12px; width: 100%;">Save Event</button>
             </div>
         </div>
     </div>
@@ -620,34 +550,23 @@
     <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
     
     <script>
-        // --- TRANSLATION ENGINE & NUMBER CONVERTER ---
         const i18n = {
             'bn': { months: {'Magha':'মাঘ', 'Phalguna':'ফাল্গুন', 'Chaitra':'চৈত্র', 'Vaisakha':'বৈশাখ', 'Jyeshtha':'জ্যৈষ্ঠ', 'Ashadha':'আষাঢ়', 'Shravana':'শ্রাবণ', 'Bhadrapada':'ভাদ্র', 'Ashvina':'আশ্বিন', 'Kartika':'কার্তিক', 'Margashirsha':'অগ্রহায়ণ', 'Pausha':'পৌষ'} },
             'hi': { months: {'Magha':'माघ', 'Phalguna':'फाल्गुन', 'Chaitra':'चैत्र', 'Vaisakha':'वैशाख', 'Jyeshtha':'ज्येष्ठ', 'Ashadha':'आषाढ़', 'Shravana':'श्रावण', 'Bhadrapada':'भाद्रपद', 'Ashvina':'आश्विन', 'Kartika':'कार्तिक', 'Margashirsha':'मार्गशीर्ष', 'Pausha':'पौष'} },
             'as': { months: {'Magha':'মাঘ', 'Phalguna':'ফাল্গুন', 'Chaitra':'চ’ত', 'Vaisakha':'বহাগ', 'Jyeshtha':'জেঠ', 'Ashadha':'আহাৰ', 'Shravana':'শাওণ', 'Bhadrapada':'ভাদ', 'Ashvina':'আহিন', 'Kartika':'কাতি', 'Margashirsha':'আঘোণ', 'Pausha':'পুহ'} },
             'en': { months: {'Magha':'Magha', 'Phalguna':'Phalguna', 'Chaitra':'Chaitra', 'Vaisakha':'Vaisakha', 'Jyeshtha':'Jyeshtha', 'Ashadha':'Ashadha', 'Shravana':'Shravana', 'Bhadrapada':'Bhadrapada', 'Ashvina':'Ashvina', 'Kartika':'Kartika', 'Margashirsha':'Margashirsha', 'Pausha':'Pausha'} }
         };
-        const numMaps = {
-            'bn': ['০','১','২','৩','৪','৫','৬','৭','৮','৯'],
-            'as': ['০','১','২','৩','৪','৫','৬','৭','৮','৯'],
-            'hi': ['०','१','२','३','४','५','६','७','८','९'],
-            'en': ['0','1','2','3','4','5','6','7','8','9']
-        };
+        const numMaps = { 'bn': ['০','১','২','৩','৪','৫','৬','৭','৮','৯'], 'as': ['০','১','২','৩','৪','৫','৬','৭','৮','৯'], 'hi': ['०','१','२','३','४','५','६','७','८','९'], 'en': ['0','1','2','3','4','5','6','7','8','9'] };
 
         let currentLang = localStorage.getItem('mytime_lang') || 'bn';
         function tMonth(m) { return i18n[currentLang].months[m] || m; }
-        function tNum(num) {
-            if (currentLang === 'en') return num.toString();
-            return num.toString().split('').map(d => numMaps[currentLang][d] || d).join('');
-        }
+        function tNum(num) { if (currentLang === 'en') return num.toString(); return num.toString().split('').map(d => numMaps[currentLang][d] || d).join(''); }
 
-        // --- GOOGLE API CONFIG ---
         const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; 
         const API_KEY = 'YOUR_API_KEY'; 
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
         const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events'; 
 
-        // --- STATE & OFFLINE STORAGE ---
         let tokenClient, gapiInited = false, gisInited = false;
         let eventsList = [], holidaysList = [];
         let localEvents = JSON.parse(localStorage.getItem('mytime_events')) || [];
@@ -659,6 +578,7 @@
         
         let isDragging = false, dragStart = null, dragEnd = null, clickTimer = null;
         let activeAgendaDate = null, tempPickerYear = currentDate.getFullYear();
+        let panelOpen = false;
 
         const grid = document.getElementById('calendar-grid');
         const monthYearDisplay = document.getElementById('current-month-year');
@@ -668,7 +588,6 @@
         const sunsetSVG = `<svg class="astro-svg" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 12v4m-5.65-5.65l2.82 2.82m11.31-2.82l-2.82 2.82M2 18h20m-5-4a5 5 0 00-10 0"/></svg>`;
         const trashSVG = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
 
-        // --- ASTRONOMY & PANCHANG ---
         function getMoonFraction(year, month, day) {
             let c = 0, e = 0, jd = 0; if (month < 3) { year--; month += 12; }
             ++month; c = 365.25 * year; e = 30.6 * month; jd = c + e + day - 694039.09; 
@@ -706,17 +625,12 @@
             return `${tNum(tithiNum)} ${tMonth(maas)}`;
         }
 
-        // --- SMOOTH NAVIGATION ---
         function smoothNavigate(offset) {
             if(offset === 0) currentDate = new Date();
             else currentDate.setMonth(currentDate.getMonth() + offset);
-            
-            fetchIndianHolidays(currentDate.getFullYear()).then(() => {
-                updateCalendarView();
-            });
+            fetchIndianHolidays(currentDate.getFullYear()).then(() => { updateCalendarView(); });
         }
 
-        // --- INIT UI ---
         function initControls() {
             document.getElementById('btn-prev').addEventListener('click', () => smoothNavigate(-1));
             document.getElementById('btn-next').addEventListener('click', () => smoothNavigate(1));
@@ -724,147 +638,163 @@
             
             document.getElementById('btn-header-add').addEventListener('click', () => {
                 let todayStr = new Date().toISOString().split('T')[0];
-                document.getElementById('ev-start').value = todayStr; document.getElementById('ev-end').value = todayStr;
-                document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = '';
-                document.getElementById('ev-title').value = ''; openModal('add-modal');
+                document.getElementById('ev-start').value = todayStr; document.getElementById('ev-end').value = todayStr; openModal('add-modal');
             });
-
-            document.getElementById('btn-settings').addEventListener('click', () => { renderCalendarsList(); openModal('settings-modal'); });
+            document.getElementById('btn-settings').addEventListener('click', () => { openModal('settings-modal'); });
             
-            monthYearDisplay.addEventListener('click', () => {
-                tempPickerYear = currentDate.getFullYear(); document.getElementById('picker-year-display').textContent = tempPickerYear; openModal('datepicker-modal');
-            });
+            monthYearDisplay.addEventListener('click', () => { tempPickerYear = currentDate.getFullYear(); document.getElementById('picker-year-display').textContent = tempPickerYear; openModal('datepicker-modal'); });
             document.getElementById('picker-prev-year').addEventListener('click', () => document.getElementById('picker-year-display').textContent = --tempPickerYear);
             document.getElementById('picker-next-year').addEventListener('click', () => document.getElementById('picker-year-display').textContent = ++tempPickerYear);
-            document.querySelectorAll('.month-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const m = parseInt(e.target.getAttribute('data-month'));
-                    currentDate.setMonth(m); currentDate.setFullYear(tempPickerYear); closeAllModals(); smoothNavigate(0);
-                });
-            });
+            document.querySelectorAll('.month-btn').forEach(btn => { btn.addEventListener('click', (e) => { const m = parseInt(e.target.getAttribute('data-month')); currentDate.setMonth(m); currentDate.setFullYear(tempPickerYear); closeAllModals(); smoothNavigate(0); }); });
 
-            document.getElementById('btn-agenda-add').addEventListener('click', () => {
-                closeAllModals(); document.getElementById('ev-start').value = activeAgendaDate; document.getElementById('ev-end').value = activeAgendaDate;
-                document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal');
-            });
+            document.getElementById('btn-agenda-add').addEventListener('click', () => { closeAllModals(); document.getElementById('ev-start').value = activeAgendaDate; document.getElementById('ev-end').value = activeAgendaDate; openModal('add-modal'); });
 
             document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', closeAllModals));
             modals.forEach(m => m.addEventListener('click', (e) => { if(e.target === m) closeAllModals(); }));
 
-            document.getElementById('agenda-list').addEventListener('click', async (e) => {
-                const delBtn = e.target.closest('.delete-ev-btn'); if(!delBtn) return;
-                const id = delBtn.getAttribute('data-id'), isGcal = delBtn.getAttribute('data-is-gcal') === 'true';
-                if(isGcal) {
-                    if(confirm("Delete this event from Google Calendar?")) {
-                        delBtn.disabled = true;
-                        try { await gapi.client.calendar.events.delete({ 'calendarId': 'primary', 'eventId': id }); fetchGoogleEvents(); closeAllModals(); } 
-                        catch(err) { alert("Failed to delete event."); delBtn.disabled = false; }
-                    }
-                } else {
-                    if(confirm("Delete this local event?")) {
-                        localEvents = localEvents.filter(ev => ev.id !== id); localStorage.setItem('mytime_events', JSON.stringify(localEvents));
-                        placeEventsOnGrid(); closeAllModals();
+            // --- MAIN SCREEN SCROLLING (Desktop + Mobile) ---
+            let monthScrollLock = null;
+            const calendarBody = document.querySelector('.calendar-body');
+
+            // Wheel (Desktop Scrolling)
+            calendarBody.addEventListener('wheel', (e) => {
+                const evContainer = e.target.closest('.events-container');
+                // Preserve scrolling for cards with overflowing content
+                if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; 
+                
+                const panelContent = e.target.closest('.panel-content');
+                if (panelContent) return; // Ignore side panel scrolling
+                if (monthScrollLock || panelOpen) return;
+
+                if (Math.abs(e.deltaY) > 20) {
+                    const dir = e.deltaY > 0 ? 1 : -1;
+                    monthScrollLock = setTimeout(() => monthScrollLock = null, 400);
+                    smoothNavigate(dir);
+                }
+            }, {passive: true});
+
+            // Touch Swipe (Mobile Scrolling)
+            let touchStartY = 0;
+            let touchStartX = 0;
+            calendarBody.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
+            }, {passive: true});
+
+            calendarBody.addEventListener('touchmove', (e) => {
+                if (monthScrollLock || isDragging || dragStart || panelOpen) return; 
+                
+                const touchEndY = e.touches[0].clientY;
+                const touchEndX = e.touches[0].clientX;
+                const deltaY = touchEndY - touchStartY;
+                const deltaX = touchEndX - touchStartX;
+                
+                // Ensure it's mostly a vertical swipe and strong enough
+                if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 50) {
+                    const evContainer = e.target.closest('.events-container');
+                    // Preserve scrolling for cards with overflowing content
+                    if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return;
+                    
+                    const dir = deltaY > 0 ? -1 : 1; // Swipe down -> prev, Swipe up -> next
+                    monthScrollLock = setTimeout(() => monthScrollLock = null, 500);
+                    smoothNavigate(dir);
+                }
+            }, {passive: true});
+
+
+            // --- SIDE PANEL LOGIC ---
+            document.getElementById('btn-toggle-panel').addEventListener('click', toggleSidePanel);
+            document.getElementById('close-side-panel').addEventListener('click', () => { panelOpen = false; updateSidePanelState(); });
+            
+            let startTouchX = 0;
+            document.body.addEventListener('touchstart', (e) => { startTouchX = e.touches[0].clientX; }, {passive:true});
+            document.body.addEventListener('touchend', (e) => {
+                let endTouchX = e.changedTouches[0].clientX;
+                if(startTouchX > window.innerWidth - 40 && endTouchX < startTouchX - 50) { panelOpen = true; updateSidePanelState(); }
+                if(panelOpen && startTouchX < window.innerWidth - 100 && endTouchX > startTouchX + 50) { panelOpen = false; updateSidePanelState(); }
+            });
+
+            // Handle Checkboxes directly in Side Panel
+            document.getElementById('notes-panel-content').addEventListener('change', function(e) {
+                if(e.target && e.target.type === 'checkbox') {
+                    if(e.target.checked) e.target.setAttribute('checked', 'checked'); else e.target.removeAttribute('checked');
+                    // Find the date card wrapper
+                    const card = e.target.closest('.panel-note-card');
+                    if(card) {
+                        const date = card.getAttribute('data-date');
+                        const bodyHtml = card.querySelector('.panel-note-body').innerHTML;
+                        dayNotesStorage[date] = bodyHtml;
+                        localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage));
+                        placeEventsOnGrid(); // Update main UI preview immediately
                     }
                 }
             });
 
-            // Notes Editor Logic
+            // Notes Editor Core Logic
             const notesEditor = document.getElementById('day-notes-editor');
             notesEditor.addEventListener('input', () => {
-                cleanupEditorLists(); // Enforce mutually exclusive list rules on manual input
-                if(activeAgendaDate) {
-                    dayNotesStorage[activeAgendaDate] = notesEditor.innerHTML;
-                    localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); // Continuous save
-                }
+                if(activeAgendaDate) { dayNotesStorage[activeAgendaDate] = notesEditor.innerHTML; localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); }
             });
             
-            // Auto-strikethrough checkbox handler
             notesEditor.addEventListener('change', function(e) {
                 if(e.target && e.target.classList.contains('note-cb')) {
-                    if(e.target.checked) {
-                        e.target.parentElement.style.textDecoration = 'line-through';
-                        e.target.parentElement.style.opacity = '0.6';
-                    } else {
-                        e.target.parentElement.style.textDecoration = 'none';
-                        e.target.parentElement.style.opacity = '1';
-                    }
-                    if(activeAgendaDate) {
-                        dayNotesStorage[activeAgendaDate] = this.innerHTML;
-                        localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); // Continuous save
+                    if(e.target.checked) { e.target.setAttribute('checked', 'checked'); } 
+                    else { e.target.removeAttribute('checked'); }
+                    if(activeAgendaDate) { dayNotesStorage[activeAgendaDate] = notesEditor.innerHTML; localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); }
+                }
+            });
+
+            notesEditor.addEventListener('keydown', function(e) {
+                if(e.key === 'Tab') {
+                    e.preventDefault();
+                    indentList(e.shiftKey);
+                    if(activeAgendaDate) { dayNotesStorage[activeAgendaDate] = notesEditor.innerHTML; localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); }
+                }
+                
+                if (e.key === 'Enter') {
+                    const sel = window.getSelection(); if (!sel.rangeCount) return; const range = sel.getRangeAt(0);
+                    let node = range.startContainer;
+                    let cbWrapper = node.nodeType === 3 ? node.parentNode.closest('.cb-wrapper') : (node.closest ? node.closest('.cb-wrapper') : null);
+
+                    if (cbWrapper) {
+                        e.preventDefault(); 
+                        const span = cbWrapper.querySelector('span');
+                        const text = span.textContent.replace(/\u200B/g, '').trim(); 
+                        const currentMargin = cbWrapper.style.marginLeft || '0px';
+
+                        if (text === '') {
+                            const newDiv = document.createElement('div'); newDiv.innerHTML = '<br>';
+                            cbWrapper.parentNode.insertBefore(newDiv, cbWrapper.nextSibling);
+                            cbWrapper.remove(); 
+                            range.setStart(newDiv, 0); range.collapse(true); sel.removeAllRanges(); sel.addRange(range);
+                        } else {
+                            let remainderFrag = null;
+                            if (span.contains(node) || span === node) {
+                                const spanRange = document.createRange(); spanRange.selectNodeContents(span);
+                                spanRange.setStart(range.endContainer, range.endOffset);
+                                remainderFrag = spanRange.extractContents(); 
+                            }
+                            
+                            const newWrapper = document.createElement('div'); newWrapper.className = 'cb-wrapper';
+                            newWrapper.style.cssText = `display: flex; align-items: flex-start; margin: 2px 0; line-height: 1.4rem; margin-left: ${currentMargin};`;
+                            
+                            const newCb = document.createElement('input'); newCb.type = 'checkbox'; newCb.className = 'note-cb';
+                            newCb.style.cssText = 'margin-top: 0.25rem; margin-right: 8px; flex-shrink: 0; width: 14px; height: 14px; cursor: pointer;';
+                            
+                            const newSpan = document.createElement('span'); newSpan.style.cssText = 'flex-grow: 1; outline: none;';
+                            if (remainderFrag && remainderFrag.textContent.replace(/\u200B/g, '') !== '') { newSpan.appendChild(remainderFrag); } else { newSpan.innerHTML = '&#8203;'; }
+                            
+                            newWrapper.appendChild(newCb); newWrapper.appendChild(newSpan);
+                            cbWrapper.parentNode.insertBefore(newWrapper, cbWrapper.nextSibling);
+                            
+                            if (newSpan.childNodes.length > 0) { let targetNode = newSpan.childNodes[0]; if (targetNode.nodeType === 3 && targetNode.nodeValue === '\u200B') { range.setStart(targetNode, 1); } else { range.setStart(targetNode, 0); } } 
+                            else { range.setStart(newSpan, 0); }
+                            range.collapse(true); sel.removeAllRanges(); sel.addRange(range);
+                        }
+                        if(activeAgendaDate) { dayNotesStorage[activeAgendaDate] = notesEditor.innerHTML; localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); }
                     }
                 }
             });
-            
-            document.getElementById('btn-export-notes').addEventListener('click', () => {
-                if(!activeAgendaDate || !notesEditor.innerText.trim()) return;
-                const content = notesEditor.innerText;
-                const dl = document.createElement('a'); 
-                dl.setAttribute("href", window.URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }))); 
-                dl.setAttribute("download", `Notes_${activeAgendaDate}.txt`); 
-                dl.click();
-            });
-
-            // Backup All Data Logic
-            document.getElementById('btn-backup-all').addEventListener('click', () => {
-                const data = { events: localEvents, calendars: myCalendars, notes: dayNotesStorage };
-                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-                const dl = document.createElement('a');
-                dl.setAttribute("href", URL.createObjectURL(blob));
-                dl.setAttribute("download", `MyCalendar_Backup_${new Date().toISOString().split('T')[0]}.json`);
-                dl.click();
-            });
-
-            document.getElementById('btn-export').addEventListener('click', () => {
-                let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//My Calendar//Local Events//EN\n";
-                localEvents.forEach(ev => {
-                    icsContent += "BEGIN:VEVENT\nUID:${ev.id}@mytime\n";
-                    const formatIcsDate = (dStr) => dStr.includes('T') ? dStr.replace(/[-:]/g, '') + '00' : dStr.replace(/-/g, '');
-                    const dtstart = formatIcsDate(ev.start), dtend = formatIcsDate(ev.end);
-                    if (!ev.start.includes('T')) {
-                        icsContent += `DTSTART;VALUE=DATE:${dtstart}\n`; let eDate = new Date(ev.end); eDate.setDate(eDate.getDate() + 1);
-                        icsContent += `DTEND;VALUE=DATE:${eDate.toISOString().split('T')[0].replace(/-/g, '')}\n`;
-                    } else { icsContent += `DTSTART:${dtstart}\nDTEND:${dtend}\n`; }
-                    icsContent += `SUMMARY:${ev.summary}\nEND:VEVENT\n`;
-                });
-                icsContent += "END:VCALENDAR";
-                const dl = document.createElement('a'); dl.setAttribute("href", window.URL.createObjectURL(new Blob([icsContent], { type: 'text/calendar;charset=utf-8' }))); 
-                dl.setAttribute("download", "my_calendar_events.ics"); dl.click();
-            });
-
-            document.getElementById('ics-upload').addEventListener('change', function(e) {
-                const file = e.target.files[0]; if (!file) return;
-                let parsedCalName = file.name.replace('.ics', ''), newCalId = 'cal_' + Date.now().toString(36);
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const lines = e.target.result.split(/\r?\n/); let inEvent = false, currentEvent = {}, importedCount = 0;
-                    for (let i = 0; i < lines.length; i++) {
-                        let line = lines[i]; while (i + 1 < lines.length && (lines[i + 1].startsWith(' ') || lines[i + 1].startsWith('\t'))) { line += lines[i + 1].substring(1); i++; }
-                        if (line.startsWith('X-WR-CALNAME:')) parsedCalName = line.substring(13).trim();
-                        if (line.startsWith('BEGIN:VEVENT')) { inEvent = true; currentEvent = { id: Date.now().toString() + Math.random().toString(36).substr(2, 5), calendarId: newCalId, isSynced: false }; } 
-                        else if (line.startsWith('END:VEVENT')) { if (inEvent && currentEvent.summary && currentEvent.start) { if (!currentEvent.end) currentEvent.end = currentEvent.start; localEvents.push(currentEvent); importedCount++; } inEvent = false; } 
-                        else if (inEvent) {
-                            if (line.startsWith('SUMMARY:')) currentEvent.summary = line.substring(8);
-                            else if (line.startsWith('DTSTART')) currentEvent.start = parseIcsDate(line);
-                            else if (line.startsWith('DTEND')) currentEvent.end = parseIcsDate(line);
-                        }
-                    }
-                    if (importedCount > 0) {
-                        myCalendars.push({ id: newCalId, name: parsedCalName, color: '#' + Math.floor(Math.random()*16777215).toString(16), visible: true });
-                        localStorage.setItem('mytime_calendars', JSON.stringify(myCalendars)); localStorage.setItem('mytime_events', JSON.stringify(localEvents));
-                        alert(`Successfully imported ${importedCount} events into "${parsedCalName}"!`); renderCalendarsList(); placeEventsOnGrid();
-                    } else alert("No valid events found in the file.");
-                    document.getElementById('ics-upload').value = ''; 
-                }; reader.readAsText(file);
-            });
-
-            function parseIcsDate(line) {
-                const parts = line.split(':'); if (parts.length < 2) return ''; const dStr = parts[1].trim();
-                if (dStr.length >= 8) {
-                    let iso = `${dStr.substring(0, 4)}-${dStr.substring(4, 6)}-${dStr.substring(6, 8)}`;
-                    if (dStr.length >= 15 && dStr.includes('T')) iso += `T${dStr.substring(dStr.indexOf('T') + 1, dStr.indexOf('T') + 3)}:${dStr.substring(dStr.indexOf('T') + 3, dStr.indexOf('T') + 5)}`;
-                    return iso;
-                } return '';
-            }
 
             document.getElementById('btn-save-event').addEventListener('click', () => {
                 const title = document.getElementById('ev-title').value, startDate = document.getElementById('ev-start').value, startTime = document.getElementById('ev-start-time').value;
@@ -875,104 +805,162 @@
                 }
             });
 
-            let monthScrollLock = null;
-            const calendarBody = document.querySelector('.calendar-body');
-            
-            // Mousewheel month navigation
-            calendarBody.addEventListener('wheel', (e) => {
-                const evContainer = e.target.closest('.events-container');
-                if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; // Allow inner scroll
-                if (monthScrollLock) return;
-                
-                if (Math.abs(e.deltaY) > 20) {
-                    const dir = e.deltaY > 0 ? 1 : -1;
-                    monthScrollLock = setTimeout(() => monthScrollLock = null, 400); // Prevent rapid firing
-                    smoothNavigate(dir);
-                }
-            }, {passive: true});
-            
-            // Swipe month navigation for mobile
-            let touchStartY = 0;
-            calendarBody.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-            }, {passive: true});
-            
-            calendarBody.addEventListener('touchmove', (e) => {
-                if (monthScrollLock || isDragging || dragStart) return; // Avoid conflict with selection drag
-                
-                const touchEndY = e.touches[0].clientY;
-                const deltaY = touchEndY - touchStartY;
-                const threshold = 50; // Minimum swipe distance
+            initSettings(); 
+        }
 
-                if (Math.abs(deltaY) > threshold) {
-                    const evContainer = e.target.closest('.events-container');
-                    if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; // Allow inner scroll
+        function toggleSidePanel() {
+            panelOpen = !panelOpen; updateSidePanelState();
+        }
+
+        function updateSidePanelState() {
+            const panel = document.getElementById('notes-side-panel');
+            if(panelOpen) { panel.classList.add('open'); renderSidePanelNotes(); } 
+            else { panel.classList.remove('open'); }
+        }
+
+        function renderSidePanelNotes() {
+            const container = document.getElementById('notes-panel-content');
+            container.innerHTML = '';
+            // Sort dates descending
+            const dates = Object.keys(dayNotesStorage).sort((a,b) => new Date(b) - new Date(a));
+            let notesFound = false;
+            
+            let d = new Date();
+            let todayDateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            let targetCard = null;
+            
+            dates.forEach(date => {
+                const html = dayNotesStorage[date];
+                // Check if actually has text or a checkbox
+                const tempDiv = document.createElement('div'); tempDiv.innerHTML = html;
+                if(tempDiv.innerText.trim() !== '' || tempDiv.querySelector('input[type="checkbox"]')) {
+                    notesFound = true;
+                    const dObj = new Date(date);
+                    const titleStr = dObj.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'});
                     
-                    const noteArea = e.target.closest('.notes-area');
-                    if (noteArea) return; // Ignore swipes in notes modal editor
+                    const card = document.createElement('div');
+                    card.className = 'panel-note-card';
+                    card.setAttribute('data-date', date);
+                    card.innerHTML = `<div class="panel-note-date">${titleStr}</div><div class="panel-note-body">${html}</div>`;
+                    
+                    // Click card (not checkbox) opens modal
+                    card.addEventListener('click', (e) => {
+                        if(e.target.tagName !== 'INPUT') { showNotesModal(date, dObj); toggleSidePanel(); }
+                    });
+                    container.appendChild(card);
 
-                    const dir = deltaY > 0 ? -1 : 1; // Swipe up moves to next month (positive offset)
-                    monthScrollLock = setTimeout(() => monthScrollLock = null, 600); // Debounce
-                    smoothNavigate(dir);
+                    if(date === todayDateString) {
+                        targetCard = card;
+                    }
                 }
-            }, {passive: true});
-
-            initSettings(); requestLocationPermissionIfSunOn();
+            });
+            
+            if(!notesFound) { 
+                container.innerHTML = '<div style="opacity:0.5; text-align:center; margin-top:20px; font-size:0.9rem;">No notes yet.</div>'; 
+            } else {
+                setTimeout(() => {
+                    if(targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else if (container.firstElementChild) {
+                        container.firstElementChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        container.scrollTop = 0;
+                    }
+                }, 50);
+            }
         }
 
         // --- NOTE EDITOR FORMATTING LOGIC ---
-        function toggleBullet() {
-            document.execCommand('insertUnorderedList', false, null);
-            cleanupEditorLists();
+        function toggleBullet() { removeCbWrapper(); document.execCommand('insertUnorderedList', false, null); cleanupEditorLists(); }
+        function toggleNumber() { removeCbWrapper(); document.execCommand('insertOrderedList', false, null); cleanupEditorLists(); }
+        
+        function removeCbWrapper() {
+            const sel = window.getSelection(); if (!sel.rangeCount) return;
+            let node = sel.anchorNode;
+            let cbWrapper = node.nodeType === 3 ? node.parentNode.closest('.cb-wrapper') : (node.closest ? node.closest('.cb-wrapper') : null);
+            if (cbWrapper) {
+                let span = cbWrapper.querySelector('span');
+                if(span) {
+                    let div = document.createElement('div');
+                    div.innerHTML = span.innerHTML;
+                    cbWrapper.parentNode.insertBefore(div, cbWrapper);
+                    cbWrapper.remove();
+                    const range = document.createRange();
+                    range.selectNodeContents(div);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }
         }
-        function toggleNumber() {
-            document.execCommand('insertOrderedList', false, null);
-            cleanupEditorLists();
-        }
-        function insertCheckbox() {
-            // Browser handles mutually exclusive lists automatically when toggling off native lists first.
-            if(document.queryCommandState('insertUnorderedList')) document.execCommand('insertUnorderedList', false, null);
-            if(document.queryCommandState('insertOrderedList')) document.execCommand('insertOrderedList', false, null);
+
+        function indentList(outdent = false) {
+            const sel = window.getSelection(); if (!sel.rangeCount) return;
+            const node = sel.anchorNode;
+            const cbWrapper = node.nodeType === 3 ? node.parentNode.closest('.cb-wrapper') : (node.closest ? node.closest('.cb-wrapper') : null);
             
-            // Wraps checkbox in a flex div so it mimics bullet linebreaks properly
-            const html = '<div class="cb-wrapper" style="display: flex; align-items: flex-start; margin: 2px 0;"><input type="checkbox" class="note-cb" style="margin-top: 4px; margin-right: 6px; flex-shrink: 0;"><span style="flex-grow: 1;">&#8203;</span></div>';
-            document.execCommand('insertHTML', false, html);
+            if (cbWrapper) {
+                let current = parseInt(cbWrapper.style.marginLeft || 0);
+                cbWrapper.style.marginLeft = outdent ? Math.max(0, current - 20) + 'px' : (current + 20) + 'px';
+            } else {
+                document.execCommand(outdent ? 'outdent' : 'indent', false, null);
+            }
         }
+
+        function insertCheckbox() {
+            const sel = window.getSelection(); if (!sel.rangeCount) return;
+            const editor = document.getElementById('day-notes-editor');
+            
+            let node = sel.anchorNode;
+            let li = node.nodeType === 3 ? node.parentNode.closest('li') : (node.closest ? node.closest('li') : null);
+            if (li) {
+                if (li.parentNode.tagName === 'UL') document.execCommand('insertUnorderedList', false, null);
+                else if (li.parentNode.tagName === 'OL') document.execCommand('insertOrderedList', false, null);
+                node = window.getSelection().anchorNode;
+            }
+            
+            let cbWrapper = node.nodeType === 3 ? node.parentNode.closest('.cb-wrapper') : (node.closest ? node.closest('.cb-wrapper') : null);
+            if (cbWrapper) return;
+            
+            document.execCommand('formatBlock', false, 'div');
+            node = window.getSelection().anchorNode;
+            let block = node.nodeType === 3 ? node.parentNode : node;
+            if (block && block.tagName !== 'DIV' && block !== editor) block = block.closest('div');
+            
+            if (block && block !== editor && !block.classList.contains('cb-wrapper')) {
+                const content = block.innerHTML;
+                const uniqueId = 'cb-span-' + Date.now();
+                block.className = 'cb-wrapper';
+                block.style.cssText = `display: flex; align-items: flex-start; margin: 2px 0; line-height: 1.4rem;`;
+                block.innerHTML = `<input type="checkbox" class="note-cb" style="margin-top: 0.25rem; margin-right: 8px; flex-shrink: 0; width: 14px; height: 14px; cursor: pointer;"><span id="${uniqueId}" style="flex-grow: 1; outline: none;">${content === '<br>' ? '&#8203;' : content}</span>`;
+                
+                const newSpan = document.getElementById(uniqueId);
+                if (newSpan) {
+                    newSpan.removeAttribute('id');
+                    const range = document.createRange();
+                    range.selectNodeContents(newSpan);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            } else {
+                const uniqueId = 'cb-span-' + Date.now();
+                const html = `<div class="cb-wrapper" style="display: flex; align-items: flex-start; margin: 2px 0; line-height: 1.4rem;"><input type="checkbox" class="note-cb" style="margin-top: 0.25rem; margin-right: 8px; flex-shrink: 0; width: 14px; height: 14px; cursor: pointer;"><span id="${uniqueId}" style="flex-grow: 1; outline: none;">&#8203;</span></div>`;
+                document.execCommand('insertHTML', false, html);
+                const newSpan = document.getElementById(uniqueId);
+                if (newSpan) {
+                    newSpan.removeAttribute('id'); const range = document.createRange(); 
+                    range.setStart(newSpan.childNodes[0], 1); range.collapse(true); sel.removeAllRanges(); sel.addRange(range);
+                }
+            }
+        }
+        
         function cleanupEditorLists() {
-            // Removes custom checkboxes that end up inside native list items to enforce mutual exclusivity
             const editor = document.getElementById('day-notes-editor');
             editor.querySelectorAll('li').forEach(li => {
-                li.querySelectorAll('.cb-wrapper').forEach(w => {
-                    const span = w.querySelector('span');
-                    w.outerHTML = span ? span.innerHTML : w.innerText;
-                });
+                li.querySelectorAll('.cb-wrapper').forEach(w => { const span = w.querySelector('span'); w.outerHTML = span ? span.innerHTML : w.innerText; });
                 li.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
             });
-        }
-
-        function renderCalendarsList() {
-            const list = document.getElementById('calendars-list'); if(!list) return; list.innerHTML = '';
-            myCalendars.forEach(cal => {
-                const div = document.createElement('div'); div.style = "display:flex; justify-content:space-between; align-items:center; background: var(--btn-bg); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; font-size:0.85rem; font-weight:600;";
-                const nameSpan = document.createElement('span'); nameSpan.innerHTML = `<span style="color:${cal.color}; font-size:1.2rem; line-height:0.5; vertical-align: middle;">•</span> ${cal.name}`;
-                const btn = document.createElement('button'); btn.innerHTML = trashSVG; btn.style = "background: transparent; padding: 4px; color: var(--holiday-color);"; btn.title = "Delete Calendar";
-                if(cal.id !== 'default') {
-                    btn.onclick = () => {
-                        if(confirm(`Delete imported calendar "${cal.name}" and all its events?`)) {
-                            myCalendars = myCalendars.filter(c => c.id !== cal.id); localEvents = localEvents.filter(e => e.calendarId !== cal.id);
-                            localStorage.setItem('mytime_calendars', JSON.stringify(myCalendars)); localStorage.setItem('mytime_events', JSON.stringify(localEvents));
-                            renderCalendarsList(); placeEventsOnGrid();
-                        }
-                    };
-                } else { btn.style.opacity = '0.3'; btn.disabled = true; btn.title = "Default calendar cannot be deleted"; } 
-                div.appendChild(nameSpan); div.appendChild(btn); list.appendChild(div);
-            });
-        }
-
-        function requestLocationPermissionIfSunOn() {
-            if(localStorage.getItem('minima_show_sun') === 'true' && navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition( pos => { userLat = pos.coords.latitude; userLon = pos.coords.longitude; fetchIndianHolidays(currentDate.getFullYear()).then(() => updateCalendarView()); }, err => { console.warn('Location access denied.'); } );
-            }
         }
 
         function initSettings() {
@@ -980,22 +968,13 @@
             langSelect.value = currentLang; langSelect.addEventListener('change', (e) => { currentLang = e.target.value; localStorage.setItem('mytime_lang', currentLang); fetchIndianHolidays(currentDate.getFullYear()).then(() => updateCalendarView()); });
 
             const isDark = localStorage.getItem('minima_theme') === 'dark' || (!localStorage.getItem('minima_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            const tTheme = document.getElementById('toggle-theme');
-            const themeMeta = document.getElementById('theme-color-meta');
+            const tTheme = document.getElementById('toggle-theme'); const themeMeta = document.getElementById('theme-color-meta');
             
-            if(isDark) { 
-                document.documentElement.setAttribute('data-theme', 'dark'); 
-                tTheme.classList.add('active'); 
-                themeMeta.setAttribute('content', '#000000');
-            } else {
-                themeMeta.setAttribute('content', '#ffffff');
-            }
+            if(isDark) { document.documentElement.setAttribute('data-theme', 'dark'); tTheme.classList.add('active'); themeMeta.setAttribute('content', '#000000'); } else { themeMeta.setAttribute('content', '#ffffff'); }
             
             tTheme.addEventListener('click', () => { 
-                tTheme.classList.toggle('active'); 
-                const theme = tTheme.classList.contains('active') ? 'dark' : 'light'; 
-                document.documentElement.setAttribute('data-theme', theme); 
-                localStorage.setItem('minima_theme', theme); 
+                tTheme.classList.toggle('active'); const theme = tTheme.classList.contains('active') ? 'dark' : 'light'; 
+                document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('minima_theme', theme); 
                 themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff');
             });
 
@@ -1003,25 +982,25 @@
             setups.forEach(s => {
                 const el = document.getElementById(s.id); let state = localStorage.getItem(s.key); state = state === null ? s.def : state === 'true';
                 if(state) { body.classList.add(s.cls); el.classList.add('active'); } else { body.classList.remove(s.cls); el.classList.remove('active'); }
-                el.addEventListener('click', () => {
-                    el.classList.toggle('active'); const isActive = el.classList.contains('active');
-                    if(isActive) body.classList.add(s.cls); else body.classList.remove(s.cls);
-                    localStorage.setItem(s.key, isActive);
-                    if (s.id === 'toggle-sun' && isActive) requestLocationPermissionIfSunOn();
-                });
+                el.addEventListener('click', () => { el.classList.toggle('active'); const isActive = el.classList.contains('active'); if(isActive) body.classList.add(s.cls); else body.classList.remove(s.cls); localStorage.setItem(s.key, isActive); });
             });
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeAllModals() { 
             modals.forEach(m => m.classList.add('hidden')); 
-            if(activeAgendaDate) placeEventsOnGrid(); // Refresh preview when closing Day Notes
+            if(activeAgendaDate) { placeEventsOnGrid(); if(panelOpen) renderSidePanelNotes(); } 
             activeAgendaDate = null; 
         }
 
         function updateCalendarView() {
             monthYearDisplay.textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); grid.innerHTML = '';
             const year = currentDate.getFullYear(), month = currentDate.getMonth(), firstDayIndex = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), prevDaysInMonth = new Date(year, month, 0).getDate(), today = new Date();
+            
+            document.querySelectorAll('.weekdays .weekday-label').forEach((el, idx) => {
+                if (idx === today.getDay() && year === today.getFullYear() && month === today.getMonth()) el.classList.add('today-label'); else el.classList.remove('today-label');
+            });
+
             let cells = [];
             for (let i = firstDayIndex - 1; i >= 0; i--) cells.push({ date: new Date(year, month - 1, prevDaysInMonth - i), isOther: true });
             for (let i = 1; i <= daysInMonth; i++) cells.push({ date: new Date(year, month, i), isOther: false });
@@ -1034,122 +1013,47 @@
                 const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 cell.setAttribute('data-date', dateString);
                 
-                const astro = getSunTimes(d, userLat, userLon);
-                const indDate = getIndianDate(d, astro.fraction);
-                
-                cell.setAttribute('data-moon', astro.moon);
+                const astro = getSunTimes(d, userLat, userLon); const indDate = getIndianDate(d, astro.fraction); cell.setAttribute('data-moon', astro.moon);
 
-                cell.innerHTML = `
-                    <div class="day-top"><div class="date-number en-num">${d.getDate()}</div><div class="hindu-date">${indDate}</div></div>
-                    <div class="events-container"></div>
-                    <div class="astro-row"><span class="sun-times en-num"><span>${sunriseSVG}${astro.sunRise}</span> <span>${sunsetSVG}${astro.sunSet}</span></span><span class="moon-icon monotone-icon">${astro.moon}</span></div>
-                `;
+                cell.innerHTML = `<div class="day-top"><div class="date-number en-num">${d.getDate()}</div><div class="hindu-date">${indDate}</div></div><div class="events-container"></div><div class="astro-row"><span class="sun-times en-num"><span>${sunriseSVG}${astro.sunRise}</span> <span>${sunsetSVG}${astro.sunSet}</span></span><span class="moon-icon monotone-icon">${astro.moon}</span></div>`;
 
                 cell.addEventListener('mousedown', () => { isDragging = true; dragStart = dateString; dragEnd = dateString; updateDragVisuals(); });
                 cell.addEventListener('mouseenter', () => { if (isDragging) { dragEnd = dateString; updateDragVisuals(); } });
                 cell.addEventListener('click', () => { if (dragStart !== dragEnd) return; if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; } else { clickTimer = setTimeout(() => { clickTimer = null; showNotesModal(dateString, d); }, 250); } });
-                cell.addEventListener('dblclick', () => { clearTimeout(clickTimer); clickTimer = null; document.getElementById('ev-start').value = dateString; document.getElementById('ev-end').value = dateString; document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal'); });
+                cell.addEventListener('dblclick', () => { clearTimeout(clickTimer); clickTimer = null; document.getElementById('ev-start').value = dateString; document.getElementById('ev-end').value = dateString; openModal('add-modal'); });
                 grid.appendChild(cell);
             });
             document.body.addEventListener('mouseup', handleDragEnd); grid.addEventListener('mouseleave', () => { if(isDragging && !dragStart) { isDragging=false; clearDragVisuals(); } });
-            placeEventsOnGrid(); if(localStorage.getItem('minima_auto_sync') === 'true' && gapiInited) fetchGoogleEvents();
+            placeEventsOnGrid(); 
         }
 
         function handleDragEnd() {
             if (isDragging) {
                 isDragging = false;
                 if (dragStart && dragEnd && dragStart !== dragEnd) { 
-                    let d1 = new Date(dragStart); let d2 = new Date(dragEnd);
-                    if(d1 > d2) { let temp = dragStart; dragStart = dragEnd; dragEnd = temp; }
-                    document.getElementById('ev-start').value = dragStart; document.getElementById('ev-end').value = dragEnd; document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal');
+                    let d1 = new Date(dragStart); let d2 = new Date(dragEnd); if(d1 > d2) { let temp = dragStart; dragStart = dragEnd; dragEnd = temp; }
+                    document.getElementById('ev-start').value = dragStart; document.getElementById('ev-end').value = dragEnd; openModal('add-modal');
                 } clearDragVisuals(); dragStart = null; dragEnd = null;
             }
         }
-
-        function updateDragVisuals() {
-            let d1 = new Date(dragStart), d2 = new Date(dragEnd); if(d1 > d2) { let t = d1; d1 = d2; d2 = t; }
-            document.querySelectorAll('.day-cell').forEach(cell => { let cellDate = new Date(cell.getAttribute('data-date')); if (cellDate >= d1 && cellDate <= d2) cell.classList.add('drag-selected'); else cell.classList.remove('drag-selected'); });
-        }
+        function updateDragVisuals() { let d1 = new Date(dragStart), d2 = new Date(dragEnd); if(d1 > d2) { let t = d1; d1 = d2; d2 = t; } document.querySelectorAll('.day-cell').forEach(cell => { let cellDate = new Date(cell.getAttribute('data-date')); if (cellDate >= d1 && cellDate <= d2) cell.classList.add('drag-selected'); else cell.classList.remove('drag-selected'); }); }
         function clearDragVisuals() { document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('drag-selected')); }
 
         function showNotesModal(dateStr, dateObj) {
             activeAgendaDate = dateStr; 
-            
-            // Set Titles & Sun Times
             document.getElementById('view-modal-title').innerHTML = `${new Date(dateStr).toLocaleDateString('en-US', {weekday: 'short', month: 'long', day: 'numeric'})}`;
-            const astro = getSunTimes(dateObj, userLat, userLon);
-            const sunTimesDiv = document.getElementById('modal-sun-times');
-            if(document.body.classList.contains('show-sun')) {
-                sunTimesDiv.innerHTML = `<span>${sunriseSVG} ${astro.sunRise}</span><span>${sunsetSVG} ${astro.sunSet}</span>`;
-                sunTimesDiv.style.display = 'flex';
-            } else {
-                sunTimesDiv.style.display = 'none';
-            }
-
-            // Load Existing Notes
-            const notesEditor = document.getElementById('day-notes-editor');
-            notesEditor.innerHTML = dayNotesStorage[dateStr] || '';
-
-            // Handle Agenda Items
-            let todaysEvents = [];
-            localEvents.forEach(e => {
-                let ds = new Date(e.start.split('T')[0]), de = new Date(e.end.split('T')[0]), target = new Date(dateStr);
-                if (target >= ds && target <= de) { let timeDisplay = 'All Day'; if(e.start.includes('T')) timeDisplay = e.start.split('T')[1]; const cal = myCalendars.find(c => c.id === (e.calendarId || 'default')); if(!cal || !cal.visible) return; todaysEvents.push({ id: e.id, summary: e.summary, isLocal: true, timeStr: timeDisplay, color: cal.color }); }
-            });
-            eventsList.forEach(e => { const evStart = e.start.dateTime || e.start.date; if(evStart && evStart.startsWith(dateStr)) { let timeDisplay = 'All Day'; if (e.start.dateTime) timeDisplay = new Date(e.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}); todaysEvents.push({ id: e.id, summary: e.summary, isGcal: true, timeStr: timeDisplay }); } });
-            
-            const list = document.getElementById('agenda-list'); list.innerHTML = ''; 
-            holidaysList.filter(h => h.date === dateStr).forEach(h => { let el = document.createElement('div'); el.className = 'agenda-item'; el.innerHTML = `<div style="display:flex; flex:1; align-items:flex-start; gap:8px;"><span class="ev-time">All Day</span> <div><span style="color:var(--holiday-color);">★</span> <strong style="color:var(--holiday-color);">${h.name}</strong></div></div>`; list.appendChild(el); });
-            todaysEvents.forEach(e => { let el = document.createElement('div'); el.className = 'agenda-item'; let icon = e.isGcal ? '🔵' : `<div style="width:12px;height:12px;border-radius:50%;background:${e.color}; margin-top:2px;"></div>`; el.innerHTML = `<div style="display:flex; flex:1; align-items:flex-start; gap:8px;"><span class="ev-time">${e.timeStr}</span> <div style="display:flex; gap:6px; align-items:flex-start;">${icon} <strong>${e.summary}</strong></div></div><button class="delete-ev-btn icon-btn" data-id="${e.id}" data-is-gcal="${e.isGcal ? 'true' : 'false'}" style="color: var(--holiday-color); padding: 6px; flex-shrink:0; background: transparent;" title="Delete Event">${trashSVG}</button>`; list.appendChild(el); });
-            
+            const notesEditor = document.getElementById('day-notes-editor'); notesEditor.innerHTML = dayNotesStorage[dateStr] || '';
             openModal('view-modal');
         }
 
         async function fetchIndianHolidays(year) { try { const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/IN`); if(response.ok) holidaysList = await response.json(); else throw new Error(); } catch (err) { holidaysList = []; } }
-        function gapiLoaded() { gapi.load('client', initializeGapiClient); }
-        async function initializeGapiClient() { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); gapiInited = true; checkAuthReady(); }
-        window.onload = async () => { initControls(); await fetchIndianHolidays(currentDate.getFullYear()); updateCalendarView(); if(typeof google !== 'undefined' && !gisInited) gisLoaded(); };
-
-        function gisLoaded() {
-            if (gisInited) return;
-            tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error !== undefined) { localStorage.removeItem('minima_auto_sync'); resetSyncButton(); throw (resp); } localStorage.setItem('minima_auto_sync', 'true'); document.getElementById('btn-sync').textContent = "Signed In"; document.getElementById('btn-sync').disabled = true; document.getElementById('btn-push-google').disabled = false; await fetchGoogleEvents(); }, });
-            gisInited = true; checkAuthReady();
-        }
-
-        function checkAuthReady() {
-            const btn = document.getElementById('btn-sync'); document.getElementById('btn-push-google').addEventListener('click', pushLocalToGoogle);
-            if (gapiInited && gisInited) { btn.addEventListener('click', () => tokenClient.requestAccessToken({prompt: 'consent'})); if(localStorage.getItem('minima_auto_sync') === 'true') { btn.textContent = "Syncing..."; tokenClient.requestAccessToken({prompt: ''}); } }
-        }
-
-        function resetSyncButton() { document.getElementById('btn-sync').textContent = "Sign In"; document.getElementById('btn-sync').disabled = false; document.getElementById('btn-push-google').disabled = true; }
-
-        async function fetchGoogleEvents() {
-            if (!gapi.client.getToken()) return;
-            try { const response = await gapi.client.calendar.events.list({ 'calendarId': 'primary', 'timeMin': new Date(currentDate.getFullYear(), currentDate.getMonth()-1, 1).toISOString(), 'timeMax': new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59).toISOString(), 'showDeleted': false, 'singleEvents': true, 'maxResults': 250, 'orderBy': 'startTime' }); eventsList = response.result.items; placeEventsOnGrid(); } catch (err) { if(err.status === 401) { localStorage.removeItem('minima_auto_sync'); resetSyncButton(); } }
-        }
-
-        async function pushLocalToGoogle() {
-            if (!gapi.client.getToken()) return; const btn = document.getElementById('btn-push-google'); btn.textContent = "Pushing...";
-            for (let ev of localEvents) {
-                if(!ev.isSynced) {
-                    try {
-                        let resource = { summary: ev.summary };
-                        if (ev.start.includes('T')) { const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; resource.start = { dateTime: ev.start + ':00', timeZone: timeZone }; resource.end = { dateTime: ev.end + ':00', timeZone: timeZone }; } 
-                        else { resource.start = { date: ev.start }; resource.end = { date: new Date(new Date(ev.end).getTime() + 86400000).toISOString().split('T')[0] }; }
-                        await gapi.client.calendar.events.insert({ 'calendarId': 'primary', 'resource': resource }); ev.isSynced = true; 
-                    } catch(e) { console.error("Failed to push", e); }
-                }
-            }
-            localStorage.setItem('mytime_events', JSON.stringify(localEvents)); btn.textContent = "Pushed ✓"; setTimeout(() => btn.textContent = "Push Offline Events", 2000); fetchGoogleEvents(); 
-        }
+        window.onload = async () => { initControls(); await fetchIndianHolidays(currentDate.getFullYear()); updateCalendarView(); };
 
         function placeEventsOnGrid() {
             document.querySelectorAll('.day-cell').forEach(cell => cell.classList.remove('has-events'));
             document.querySelectorAll('.event, .holiday, .note-preview').forEach(e => e.remove());
             
-            holidaysList.forEach(holiday => { const cell = document.querySelector(`.day-cell[data-date="${holiday.date}"]`); if(cell) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'holiday'; el.textContent = holiday.name; el.title = holiday.name; container.appendChild(el); cell.classList.add('has-events'); } });
-            
-            eventsList.forEach(event => { const startStr = event.start.dateTime || event.start.date; if (!startStr) return; const dateKey = startStr.split('T')[0]; const cell = document.querySelector(`.day-cell[data-date="${dateKey}"]`); if (cell) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'event'; let timeStr = event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}) + ' ' : ''; el.textContent = `${timeStr}${event.summary}`; el.title = el.textContent; container.appendChild(el); cell.classList.add('has-events'); } });
+            holidaysList.forEach(holiday => { const cell = document.querySelector(`.day-cell[data-date="${holiday.date}"]`); if(cell) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'holiday'; el.textContent = holiday.name; container.appendChild(el); cell.classList.add('has-events'); } });
             
             localEvents.forEach(ev => {
                 const cal = myCalendars.find(c => c.id === (ev.calendarId || 'default')); if(!cal || !cal.visible) return;
@@ -1160,35 +1064,17 @@
                 });
             });
 
-            // Place Note Previews (purple text with distinctive color)
             Object.keys(dayNotesStorage).forEach(dateKey => {
                 const cell = document.querySelector(`.day-cell[data-date="${dateKey}"]`);
                 if (cell) {
                     const container = cell.querySelector('.events-container');
                     const contentHtml = dayNotesStorage[dateKey];
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = contentHtml;
+                    const tempDiv = document.createElement('div'); tempDiv.innerHTML = contentHtml;
                     if (tempDiv.innerText.trim() || tempDiv.querySelector('input[type="checkbox"]')) {
-                        const el = document.createElement('div');
-                        el.className = 'note-preview';
-                        el.innerHTML = contentHtml;
-                        
-                        // Disable checkboxes in preview so they are read-only
-                        el.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.disabled = true; cb.style.cursor = 'default'; });
-                        
-                        container.appendChild(el);
-                        cell.classList.add('has-events');
+                        const el = document.createElement('div'); el.className = 'note-preview'; el.innerHTML = contentHtml;
+                        container.appendChild(el); cell.classList.add('has-events');
                     }
                 }
-            });
-        }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker Registered!', reg))
-                    .catch(err => console.error('Service Worker Registration Failed!', err));
             });
         }
     </script>
