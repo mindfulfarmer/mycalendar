@@ -6,7 +6,7 @@
     <title>My Calendar</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ffffff" id="theme-color-meta">
     <link rel="icon" type="image/png" href="icon-192.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,6 +41,10 @@
             --event-bg: rgba(204, 228, 255, 0.45); 
             --holiday-bg: rgba(252, 232, 235, 0.45);
             --drag-bg: rgba(0, 114, 206, 0.2);
+
+            /* New distinct note color */
+            --note-text-color: #008080; /* Teal for light theme */
+            --grid-dot-color: rgba(0, 114, 206, 0.2);
         }
 
         [data-theme="dark"] {
@@ -62,6 +66,10 @@
             --event-bg: rgba(0, 59, 111, 0.45);
             --holiday-bg: rgba(74, 17, 17, 0.45);
             --drag-bg: rgba(0, 114, 206, 0.3);
+
+            /* New distinct note color for dark theme */
+            --note-text-color: #A0E6E6; /* Light Teal for dark theme */
+            --grid-dot-color: rgba(255, 255, 255, 0.15);
         }
 
         /* STRICT NO SCROLL GLOBALS & PWA ZOOM PREVENTION */
@@ -100,7 +108,7 @@
 
         .header-left { display: flex; align-items: center; flex-grow: 1; min-width: 0; }
         .header-left h2 { 
-            font-family: 'Be Vietnam Pro', sans-serif; font-size: 2rem; font-weight: 800; 
+            font-family: 'Be Vietnam Pro', sans-serif; font-size: 1.8rem; font-weight: 800; 
             color: var(--text-primary); cursor: pointer; padding: 6px 12px;
             border-radius: 8px; transition: background 0.2s ease; margin-left: -8px; 
         }
@@ -127,12 +135,16 @@
         /* --- CALENDAR BODY & GRID --- */
         .calendar-body { 
             display: flex; flex-direction: column; flex-grow: 1; 
-            overflow: hidden; padding: 0 16px 16px 16px;
+            overflow: hidden; 
+            padding: 0; 
+            touch-action: pan-y; /* Crucial for vertical swiping */
         }
 
         .weekdays {
             display: grid; grid-template-columns: repeat(7, 1fr);
-            text-align: center; padding: 16px 8px 16px 8px; 
+            gap: 8px; 
+            text-align: center; 
+            padding: 16px 0 8px 0; 
             font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.05em; color: var(--text-primary); flex-shrink: 0;
             background: transparent; align-items: center; justify-items: center;
@@ -145,10 +157,11 @@
 
         /* --- BORDERLESS DATE CARDS --- */
         .day-cell {
-            position: relative; background: var(--cell-bg); border-radius: 10px; 
+            position: relative; background: var(--cell-bg); 
+            border-radius: 0; 
             padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden;
             transition: background 0.2s ease; user-select: none; cursor: pointer;
-            z-index: 1; /* For lunar background */
+            z-index: 1; 
         }
         .day-cell:hover { background: var(--cell-hover); }
         .day-cell.drag-selected { background: var(--drag-bg) !important; }
@@ -165,7 +178,6 @@
         }
         .day-cell.today .date-number { background-color: var(--accent-color); color: #ffffff; }
 
-        /* Hindu Date Toggle Logic */
         body:not(.show-hindu-date) .hindu-date { display: none !important; }
         
         .hindu-date {
@@ -187,22 +199,47 @@
         .show-sun .sun-times { display: flex; align-items: center; gap: 6px; }
         .show-moon .moon-icon { display: block; filter: grayscale(100%) contrast(1.2); }
         .astro-svg { width: 1.1em; height: 1.1em; vertical-align: middle; margin-right: 2px; opacity: 0.8; }
+        
+        .day-cell.has-events .astro-row { display: none !important; }
 
-        /* --- HIDDEN SCROLLBAR EVENTS --- */
+        /* --- SCROLLABLE EVENTS CONTAINER --- */
         .events-container {
             display: flex; flex-direction: column; gap: 4px; flex-grow: 1;
             overflow-y: auto; padding-right: 2px; margin-top: 2px;
             -ms-overflow-style: none; scrollbar-width: none;
+            min-height: 0; /* Critical for vertical scrolling to work inside a flex container */
+            pointer-events: auto; /* Allow mousewheel within this area on desktop */
         }
         .events-container::-webkit-scrollbar { display: none; }
 
         .event, .holiday {
-            font-size: 0.65rem; font-weight: 600; padding: 2px 6px; 
+            font-size: clamp(0.55rem, 1.2vw, 0.75rem); /* Responsive Font Size */
+            font-weight: 600; padding: 2px 6px; 
             border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
         }
         .event { background: var(--event-bg); color: var(--accent-color); }
         .holiday { background: var(--holiday-bg); color: var(--holiday-color); }
         .local-event { color: white; }
+        
+        /* Note Previews on Date Card */
+        .note-preview {
+            font-size: clamp(0.55rem, 1.2vw, 0.75rem); /* Responsive Font Size */
+            font-weight: 500; padding: 2px 4px; 
+            color: var(--note-text-color, #008080); background: transparent; 
+            border-left: 2px solid var(--accent-color); margin-left: 2px;
+            white-space: normal; word-wrap: break-word; line-height: 1.4;
+            flex-shrink: 0;
+            margin-top: 6px; /* Top padding to separate from events */
+        }
+        .note-preview ul, .note-preview ol {
+            padding-left: 16px; margin: 2px 0;
+        }
+        .note-preview li {
+            margin-bottom: 2px;
+        }
+        .note-preview input[type="checkbox"] {
+            margin-right: 4px; vertical-align: middle;
+        }
 
         /* --- BORDERLESS MODALS & FORMS --- */
         .modal-overlay {
@@ -216,23 +253,22 @@
             background: var(--modal-bg); border-radius: 16px; 
             width: 90%; max-width: 400px; box-shadow: 0 24px 48px rgba(0,0,0,0.5);
             display: flex; flex-direction: column;
-            overflow: hidden; /* Keeps sleek scrollbar inside */
+            overflow: hidden; 
         }
         
         .modal-padding-wrapper { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { font-size: 1.3rem; font-weight: 700; font-family: 'Outfit', sans-serif;}
+        .modal-header h2 { font-size: 1rem; font-weight: 700; font-family: 'Outfit', sans-serif;}
         
-        /* Custom sleek scrollbar for compact settings */
         .settings-body {
             overflow-y: auto; padding: 12px 20px 20px 20px;
             display: flex; flex-direction: column; gap: 10px; max-height: calc(85vh - 60px);
         }
         .settings-body::-webkit-scrollbar { width: 6px; }
         .settings-body::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
-        .settings-body::-webkit-scrollbar-thumb { background: var(--btn-hover); border-radius: 10px; }
-        .settings-body::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+        .settings-body::-webkit-scrollbar-thumb { background: var(--btn-hover, #ccc); border-radius: 10px; }
+        .settings-body::-webkit-scrollbar-thumb:hover { background: var(--text-secondary, #999); }
 
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
         .setting-info { display: flex; flex-direction: column; gap: 2px; }
@@ -260,7 +296,7 @@
         }
         .month-btn:hover { background: var(--accent-color); color: #fff; }
 
-        .agenda-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; padding-right: 4px; -ms-overflow-style: none; scrollbar-width: none;}
+        .agenda-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 4px; -ms-overflow-style: none; scrollbar-width: none;}
         .agenda-list::-webkit-scrollbar { display: none; }
         
         .agenda-item { 
@@ -279,33 +315,99 @@
         .toggle-switch.active { background: var(--accent-color); }
         .toggle-switch.active::after { transform: translateX(16px); }
 
+        /* Notes Editor Toolbar & Area */
+        .notes-wrapper {
+            display: flex; flex-direction: column; flex-grow: 1; position: relative; margin-top: 8px;
+        }
+        
+        .editor-toolbar {
+            display: flex; gap: 4px; background: var(--btn-bg); padding: 6px 8px; 
+            border-radius: 8px 8px 0 0; border: 1px solid var(--btn-bg); border-bottom: none;
+            flex-shrink: 0; align-items: center;
+        }
+        .editor-toolbar button { 
+            padding: 4px 6px; min-width: 28px; display: flex; align-items: center; 
+            justify-content: center; background: transparent; border-radius: 6px;
+        }
+        .editor-toolbar button:hover { background: var(--btn-hover); }
+
+        .notes-area {
+            flex-grow: 1; border: 1px solid var(--btn-bg); border-radius: 0 0 8px 8px; padding: 12px; 
+            background: var(--modal-bg); color: var(--text-primary); font-size: 0.85rem; line-height: 1.6rem;
+            
+            /* Dotted Grid Background */
+            background-image: radial-gradient(var(--grid-dot-color) 1.5px, transparent 1.5px);
+            background-size: 1.6rem 1.6rem;
+            background-position: 0 0;
+            
+            overflow-y: auto; outline: none; min-height: 120px;
+        }
+        .notes-area:focus { border-color: var(--accent-color); }
+        
+        /* Make scrollbar visible on note area */
+        .notes-area::-webkit-scrollbar {
+            width: 6px;
+            display: block;
+        }
+        .notes-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .notes-area::-webkit-scrollbar-thumb {
+            background: var(--btn-hover, #ccc);
+            border-radius: 10px;
+        }
+        .notes-area::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary, #999);
+        }
+
+        .notes-area ul, .notes-area ol {
+            padding-left: 24px; margin: 0;
+        }
+        .notes-area li {
+            margin: 0; line-height: 1.6rem;
+        }
+
+        /* Checkbox styling within Notes */
+        .note-cb { margin-right: 6px; vertical-align: middle; cursor: pointer; }
+        
+        .notes-area .cb-wrapper {
+            display: flex;
+            align-items: flex-start;
+            margin: 2px 0;
+        }
+        .notes-area input[type="checkbox"].note-cb + span {
+            display: inline-block;
+            flex-grow: 1;
+        }
+
         /* Mobile View Overrides */
         @media (max-width: 600px) {
             .calendar-header { padding: 16px 12px; min-height: 75px; flex-wrap: nowrap !important; gap: 6px; }
             .header-left { width: auto; justify-content: flex-start; }
             .header-right { width: auto; justify-content: flex-end; gap: 4px; }
-            .header-left h2 { font-size: 1.15rem; padding: 4px 8px; margin-left: 0;}
+            .header-left h2 { font-size: 1.5rem; padding: 4px 8px; margin-left: 0;}
 
             .icon-btn svg { width: 16px; height: 16px; }
             button { padding: 6px 10px; font-size: 0.8rem; }
 
             .calendar-grid { gap: 2px; }
-            .day-cell { padding: 4px; border-radius: 6px; }
+            .weekdays { gap: 2px; padding: 8px 0; font-size: 0.65rem; }
+            .day-cell { padding: 4px; padding-bottom: 20px; } 
 
             .day-top { flex-direction: column; align-items: center; justify-content: center; margin-bottom: 2px; }
             .date-number { font-size: 0.9rem; width: 20px; height: 20px; }
             
-            /* Increased Top Padding for Indian Numbers in Mobile */
             .hindu-date { text-align: center; max-width: 100%; margin-top: 6px; padding-top: 2px; font-size: 0.55rem; }
 
-            .event, .holiday { padding: 2px; font-size: 0.55rem; }
-            .weekdays { padding: 8px 2px; font-size: 0.65rem; }
-            .astro-row { font-size: 0.5rem; }
+            .event, .holiday, .note-preview { padding: 2px; }
             
-            /* Hide the default small moon icon */
+            .astro-row { 
+                position: absolute; bottom: 4px; left: 0; right: 0; 
+                justify-content: center; width: 100%; padding: 0; font-size: 0.5rem;
+            }
+            
             .show-moon .moon-icon { display: none !important; }
 
-            /* Inject the moon emoji as a giant, faint background */
             .show-moon .day-cell::before {
                 content: attr(data-moon);
                 position: absolute;
@@ -313,9 +415,9 @@
                 left: 50%;
                 transform: translate(-50%, -50%);
                 font-size: 3rem;
-                opacity: 0.15; /* Increased opacity for better visibility */
+                opacity: 0.15; 
                 z-index: -1;
-                filter: grayscale(50%); /* Reduced grayscale so it pops more */
+                filter: grayscale(50%); 
                 pointer-events: none;
             }
         }
@@ -341,6 +443,41 @@
             <div id="calendar-grid" class="calendar-grid"></div>
         </section>
     </main>
+
+    <div id="view-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="height: 80vh; max-height: 80vh; max-width: 500px; display: flex; flex-direction: column; width: 90%;">
+            <div class="modal-padding-wrapper" style="height: 100%; display: flex; flex-direction: column;">
+                <div class="modal-header" style="flex-shrink: 0; padding-bottom: 4px;">
+                    <h2>Day Notes</h2>
+                    <div style="display:flex; gap: 4px; align-items:center;">
+                        <button id="btn-export-notes" class="icon-btn" title="Export .txt" style="background: transparent; color: var(--text-primary);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+                        <button id="btn-agenda-add" class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem;">+ Event</button>
+                        <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0;">
+                    <span id="view-modal-title" class="en-num" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);"></span>
+                    <div id="modal-sun-times" class="en-num" style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);"></div>
+                </div>
+                
+                <div id="agenda-list" class="agenda-list" style="max-height: 150px; flex-shrink: 0;"></div>
+
+                <div class="notes-wrapper">
+                    <div class="editor-toolbar">
+                        <button class="icon-btn" onclick="document.execCommand('bold', false, null)" title="Bold"><b>B</b></button>
+                        <button class="icon-btn" onclick="document.execCommand('italic', false, null)" title="Italic"><i>I</i></button>
+                        <button class="icon-btn" onclick="document.execCommand('strikeThrough', false, null)" title="Strikethrough"><span style="text-decoration: line-through; font-family: sans-serif; font-size: 14px;">S</span></button>
+                        <div style="width: 1px; height: 16px; background: var(--text-secondary); opacity: 0.3; margin: 0 4px;"></div>
+                        <button class="icon-btn" onclick="toggleBullet()" title="Bullets"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></button>
+                        <button class="icon-btn" onclick="toggleNumber()" title="Numbers"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></button>
+                        <button class="icon-btn" onclick="insertCheckbox()" title="Checkbox"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                    </div>
+                    <div id="day-notes-editor" class="notes-area" contenteditable="true" placeholder="Type your notes here..."></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="datepicker-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 320px;">
@@ -409,6 +546,14 @@
                 <div class="setting-row">
                     <div class="setting-info"><span class="setting-title">Lunar Phases</span></div><div id="toggle-moon" class="toggle-switch active"></div>
                 </div>
+                
+                <div class="setting-row" style="margin-top: 6px;">
+                    <div class="setting-info">
+                        <span class="setting-title">Notes Backup Status</span>
+                        <span class="setting-desc">Auto-saving to Local Storage (Browser)</span>
+                    </div>
+                </div>
+
                 <div class="setting-row" style="margin-top: 6px;">
                     <div class="setting-info"><span class="setting-title">Google Calendar</span><span class="setting-desc">Sync personal events</span></div>
                     <button id="btn-sync" class="btn-primary" style="padding:6px 12px; font-size:0.8rem;">Sign In</button>
@@ -418,8 +563,12 @@
                     <button id="btn-push-google" style="padding:6px 12px; font-size:0.8rem;" disabled>Push</button>
                 </div>
                 <div class="setting-row">
+                    <div class="setting-info"><span class="setting-title">Backup All Data</span><span class="setting-desc">Export events, calendars & notes</span></div>
+                    <button id="btn-backup-all" style="padding:6px 12px; font-size:0.8rem;">Backup JSON</button>
+                </div>
+                <div class="setting-row">
                     <div class="setting-info"><span class="setting-title">Export (.ics)</span><span class="setting-desc">Backup to Thunderbird/Apple</span></div>
-                    <button id="btn-export" style="padding:6px 12px; font-size:0.8rem;">Export</button>
+                    <button id="btn-export" style="padding:6px 12px; font-size:0.8rem;">Export ICS</button>
                 </div>
 
                 <div style="text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6;">
@@ -427,19 +576,6 @@
                     <div><a href="https://github.com/mindfulfarmer/" target="_blank" style="color: var(--accent-color); text-decoration: none;">github.com/mindfulfarmer/</a></div>
                     <div style="margin-top: 6px;">Made in India 🇮🇳</div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="view-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div class="modal-padding-wrapper">
-                <div class="modal-header">
-                    <h2 id="view-modal-title" class="en-num">Events</h2>
-                    <button class="icon-btn close-modal" style="background: transparent;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                </div>
-                <div id="agenda-list" class="agenda-list"></div>
-                <button id="btn-agenda-add" class="btn-primary" style="margin-top: 8px; padding: 12px; width: 100%;">+ Add Event</button>
             </div>
         </div>
     </div>
@@ -480,7 +616,7 @@
         </div>
     </div>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded()"></script>
     <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
     
     <script>
@@ -516,6 +652,7 @@
         let eventsList = [], holidaysList = [];
         let localEvents = JSON.parse(localStorage.getItem('mytime_events')) || [];
         let myCalendars = JSON.parse(localStorage.getItem('mytime_calendars')) || [{ id: 'default', name: 'Default Local Calendar', color: '#0072CE', visible: true }];
+        let dayNotesStorage = JSON.parse(localStorage.getItem('mytime_notes')) || {};
 
         let currentDate = new Date();
         let userLat = 28.6139, userLon = 77.2090; 
@@ -569,7 +706,7 @@
             return `${tNum(tithiNum)} ${tMonth(maas)}`;
         }
 
-        // --- SMOOTH NAVIGATION (Vertical Sliding List Feel) ---
+        // --- SMOOTH NAVIGATION ---
         function smoothNavigate(offset) {
             if(offset === 0) currentDate = new Date();
             else currentDate.setMonth(currentDate.getMonth() + offset);
@@ -629,6 +766,52 @@
                         placeEventsOnGrid(); closeAllModals();
                     }
                 }
+            });
+
+            // Notes Editor Logic
+            const notesEditor = document.getElementById('day-notes-editor');
+            notesEditor.addEventListener('input', () => {
+                cleanupEditorLists(); // Enforce mutually exclusive list rules on manual input
+                if(activeAgendaDate) {
+                    dayNotesStorage[activeAgendaDate] = notesEditor.innerHTML;
+                    localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); // Continuous save
+                }
+            });
+            
+            // Auto-strikethrough checkbox handler
+            notesEditor.addEventListener('change', function(e) {
+                if(e.target && e.target.classList.contains('note-cb')) {
+                    if(e.target.checked) {
+                        e.target.parentElement.style.textDecoration = 'line-through';
+                        e.target.parentElement.style.opacity = '0.6';
+                    } else {
+                        e.target.parentElement.style.textDecoration = 'none';
+                        e.target.parentElement.style.opacity = '1';
+                    }
+                    if(activeAgendaDate) {
+                        dayNotesStorage[activeAgendaDate] = this.innerHTML;
+                        localStorage.setItem('mytime_notes', JSON.stringify(dayNotesStorage)); // Continuous save
+                    }
+                }
+            });
+            
+            document.getElementById('btn-export-notes').addEventListener('click', () => {
+                if(!activeAgendaDate || !notesEditor.innerText.trim()) return;
+                const content = notesEditor.innerText;
+                const dl = document.createElement('a'); 
+                dl.setAttribute("href", window.URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }))); 
+                dl.setAttribute("download", `Notes_${activeAgendaDate}.txt`); 
+                dl.click();
+            });
+
+            // Backup All Data Logic
+            document.getElementById('btn-backup-all').addEventListener('click', () => {
+                const data = { events: localEvents, calendars: myCalendars, notes: dayNotesStorage };
+                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                const dl = document.createElement('a');
+                dl.setAttribute("href", URL.createObjectURL(blob));
+                dl.setAttribute("download", `MyCalendar_Backup_${new Date().toISOString().split('T')[0]}.json`);
+                dl.click();
             });
 
             document.getElementById('btn-export').addEventListener('click', () => {
@@ -693,9 +876,12 @@
             });
 
             let monthScrollLock = null;
-            document.querySelector('.calendar-body').addEventListener('wheel', (e) => {
+            const calendarBody = document.querySelector('.calendar-body');
+            
+            // Mousewheel month navigation
+            calendarBody.addEventListener('wheel', (e) => {
                 const evContainer = e.target.closest('.events-container');
-                if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; 
+                if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; // Allow inner scroll
                 if (monthScrollLock) return;
                 
                 if (Math.abs(e.deltaY) > 20) {
@@ -704,8 +890,64 @@
                     smoothNavigate(dir);
                 }
             }, {passive: true});
+            
+            // Swipe month navigation for mobile
+            let touchStartY = 0;
+            calendarBody.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            }, {passive: true});
+            
+            calendarBody.addEventListener('touchmove', (e) => {
+                if (monthScrollLock || isDragging || dragStart) return; // Avoid conflict with selection drag
+                
+                const touchEndY = e.touches[0].clientY;
+                const deltaY = touchEndY - touchStartY;
+                const threshold = 50; // Minimum swipe distance
+
+                if (Math.abs(deltaY) > threshold) {
+                    const evContainer = e.target.closest('.events-container');
+                    if (evContainer && evContainer.scrollHeight > evContainer.clientHeight) return; // Allow inner scroll
+                    
+                    const noteArea = e.target.closest('.notes-area');
+                    if (noteArea) return; // Ignore swipes in notes modal editor
+
+                    const dir = deltaY > 0 ? -1 : 1; // Swipe up moves to next month (positive offset)
+                    monthScrollLock = setTimeout(() => monthScrollLock = null, 600); // Debounce
+                    smoothNavigate(dir);
+                }
+            }, {passive: true});
 
             initSettings(); requestLocationPermissionIfSunOn();
+        }
+
+        // --- NOTE EDITOR FORMATTING LOGIC ---
+        function toggleBullet() {
+            document.execCommand('insertUnorderedList', false, null);
+            cleanupEditorLists();
+        }
+        function toggleNumber() {
+            document.execCommand('insertOrderedList', false, null);
+            cleanupEditorLists();
+        }
+        function insertCheckbox() {
+            // Browser handles mutually exclusive lists automatically when toggling off native lists first.
+            if(document.queryCommandState('insertUnorderedList')) document.execCommand('insertUnorderedList', false, null);
+            if(document.queryCommandState('insertOrderedList')) document.execCommand('insertOrderedList', false, null);
+            
+            // Wraps checkbox in a flex div so it mimics bullet linebreaks properly
+            const html = '<div class="cb-wrapper" style="display: flex; align-items: flex-start; margin: 2px 0;"><input type="checkbox" class="note-cb" style="margin-top: 4px; margin-right: 6px; flex-shrink: 0;"><span style="flex-grow: 1;">&#8203;</span></div>';
+            document.execCommand('insertHTML', false, html);
+        }
+        function cleanupEditorLists() {
+            // Removes custom checkboxes that end up inside native list items to enforce mutual exclusivity
+            const editor = document.getElementById('day-notes-editor');
+            editor.querySelectorAll('li').forEach(li => {
+                li.querySelectorAll('.cb-wrapper').forEach(w => {
+                    const span = w.querySelector('span');
+                    w.outerHTML = span ? span.innerHTML : w.innerText;
+                });
+                li.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
+            });
         }
 
         function renderCalendarsList() {
@@ -738,8 +980,24 @@
             langSelect.value = currentLang; langSelect.addEventListener('change', (e) => { currentLang = e.target.value; localStorage.setItem('mytime_lang', currentLang); fetchIndianHolidays(currentDate.getFullYear()).then(() => updateCalendarView()); });
 
             const isDark = localStorage.getItem('minima_theme') === 'dark' || (!localStorage.getItem('minima_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            const tTheme = document.getElementById('toggle-theme'); if(isDark) { document.documentElement.setAttribute('data-theme', 'dark'); tTheme.classList.add('active'); }
-            tTheme.addEventListener('click', () => { tTheme.classList.toggle('active'); const theme = tTheme.classList.contains('active') ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('minima_theme', theme); });
+            const tTheme = document.getElementById('toggle-theme');
+            const themeMeta = document.getElementById('theme-color-meta');
+            
+            if(isDark) { 
+                document.documentElement.setAttribute('data-theme', 'dark'); 
+                tTheme.classList.add('active'); 
+                themeMeta.setAttribute('content', '#000000');
+            } else {
+                themeMeta.setAttribute('content', '#ffffff');
+            }
+            
+            tTheme.addEventListener('click', () => { 
+                tTheme.classList.toggle('active'); 
+                const theme = tTheme.classList.contains('active') ? 'dark' : 'light'; 
+                document.documentElement.setAttribute('data-theme', theme); 
+                localStorage.setItem('minima_theme', theme); 
+                themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff');
+            });
 
             const setups = [ { id: 'toggle-weekends', key: 'minima_show_weekends', cls: 'show-weekends', def: true }, { id: 'toggle-sun', key: 'minima_show_sun', cls: 'show-sun', def: true }, { id: 'toggle-moon', key: 'minima_show_moon', cls: 'show-moon', def: true }, { id: 'toggle-hindu', key: 'minima_show_hindu', cls: 'show-hindu-date', def: true } ];
             setups.forEach(s => {
@@ -755,7 +1013,11 @@
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeAllModals() { modals.forEach(m => m.classList.add('hidden')); activeAgendaDate = null; }
+        function closeAllModals() { 
+            modals.forEach(m => m.classList.add('hidden')); 
+            if(activeAgendaDate) placeEventsOnGrid(); // Refresh preview when closing Day Notes
+            activeAgendaDate = null; 
+        }
 
         function updateCalendarView() {
             monthYearDisplay.textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); grid.innerHTML = '';
@@ -775,7 +1037,6 @@
                 const astro = getSunTimes(d, userLat, userLon);
                 const indDate = getIndianDate(d, astro.fraction);
                 
-                // Add moon attribute for the new mobile background feature
                 cell.setAttribute('data-moon', astro.moon);
 
                 cell.innerHTML = `
@@ -786,7 +1047,7 @@
 
                 cell.addEventListener('mousedown', () => { isDragging = true; dragStart = dateString; dragEnd = dateString; updateDragVisuals(); });
                 cell.addEventListener('mouseenter', () => { if (isDragging) { dragEnd = dateString; updateDragVisuals(); } });
-                cell.addEventListener('click', () => { if (dragStart !== dragEnd) return; if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; } else { clickTimer = setTimeout(() => { clickTimer = null; if(cell.querySelector('.events-container').children.length > 0) showAgendaModal(dateString); }, 250); } });
+                cell.addEventListener('click', () => { if (dragStart !== dragEnd) return; if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; } else { clickTimer = setTimeout(() => { clickTimer = null; showNotesModal(dateString, d); }, 250); } });
                 cell.addEventListener('dblclick', () => { clearTimeout(clickTimer); clickTimer = null; document.getElementById('ev-start').value = dateString; document.getElementById('ev-end').value = dateString; document.getElementById('ev-start-time').value = ''; document.getElementById('ev-end-time').value = ''; document.getElementById('ev-title').value = ''; openModal('add-modal'); });
                 grid.appendChild(cell);
             });
@@ -811,27 +1072,46 @@
         }
         function clearDragVisuals() { document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('drag-selected')); }
 
-        function showAgendaModal(dateStr) {
-            activeAgendaDate = dateStr; let todaysEvents = [];
+        function showNotesModal(dateStr, dateObj) {
+            activeAgendaDate = dateStr; 
+            
+            // Set Titles & Sun Times
+            document.getElementById('view-modal-title').innerHTML = `${new Date(dateStr).toLocaleDateString('en-US', {weekday: 'short', month: 'long', day: 'numeric'})}`;
+            const astro = getSunTimes(dateObj, userLat, userLon);
+            const sunTimesDiv = document.getElementById('modal-sun-times');
+            if(document.body.classList.contains('show-sun')) {
+                sunTimesDiv.innerHTML = `<span>${sunriseSVG} ${astro.sunRise}</span><span>${sunsetSVG} ${astro.sunSet}</span>`;
+                sunTimesDiv.style.display = 'flex';
+            } else {
+                sunTimesDiv.style.display = 'none';
+            }
+
+            // Load Existing Notes
+            const notesEditor = document.getElementById('day-notes-editor');
+            notesEditor.innerHTML = dayNotesStorage[dateStr] || '';
+
+            // Handle Agenda Items
+            let todaysEvents = [];
             localEvents.forEach(e => {
                 let ds = new Date(e.start.split('T')[0]), de = new Date(e.end.split('T')[0]), target = new Date(dateStr);
                 if (target >= ds && target <= de) { let timeDisplay = 'All Day'; if(e.start.includes('T')) timeDisplay = e.start.split('T')[1]; const cal = myCalendars.find(c => c.id === (e.calendarId || 'default')); if(!cal || !cal.visible) return; todaysEvents.push({ id: e.id, summary: e.summary, isLocal: true, timeStr: timeDisplay, color: cal.color }); }
             });
             eventsList.forEach(e => { const evStart = e.start.dateTime || e.start.date; if(evStart && evStart.startsWith(dateStr)) { let timeDisplay = 'All Day'; if (e.start.dateTime) timeDisplay = new Date(e.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}); todaysEvents.push({ id: e.id, summary: e.summary, isGcal: true, timeStr: timeDisplay }); } });
-            if(todaysEvents.length === 0 && holidaysList.filter(h => h.date === dateStr).length === 0) return; 
-
-            const list = document.getElementById('agenda-list'); list.innerHTML = ''; document.getElementById('view-modal-title').innerHTML = `<span class="en-num">${new Date(dateStr).toLocaleDateString('en-US', {weekday: 'short', month: 'long', day: 'numeric'})}</span>`;
+            
+            const list = document.getElementById('agenda-list'); list.innerHTML = ''; 
             holidaysList.filter(h => h.date === dateStr).forEach(h => { let el = document.createElement('div'); el.className = 'agenda-item'; el.innerHTML = `<div style="display:flex; flex:1; align-items:flex-start; gap:8px;"><span class="ev-time">All Day</span> <div><span style="color:var(--holiday-color);">★</span> <strong style="color:var(--holiday-color);">${h.name}</strong></div></div>`; list.appendChild(el); });
             todaysEvents.forEach(e => { let el = document.createElement('div'); el.className = 'agenda-item'; let icon = e.isGcal ? '🔵' : `<div style="width:12px;height:12px;border-radius:50%;background:${e.color}; margin-top:2px;"></div>`; el.innerHTML = `<div style="display:flex; flex:1; align-items:flex-start; gap:8px;"><span class="ev-time">${e.timeStr}</span> <div style="display:flex; gap:6px; align-items:flex-start;">${icon} <strong>${e.summary}</strong></div></div><button class="delete-ev-btn icon-btn" data-id="${e.id}" data-is-gcal="${e.isGcal ? 'true' : 'false'}" style="color: var(--holiday-color); padding: 6px; flex-shrink:0; background: transparent;" title="Delete Event">${trashSVG}</button>`; list.appendChild(el); });
+            
             openModal('view-modal');
         }
 
         async function fetchIndianHolidays(year) { try { const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/IN`); if(response.ok) holidaysList = await response.json(); else throw new Error(); } catch (err) { holidaysList = []; } }
         function gapiLoaded() { gapi.load('client', initializeGapiClient); }
         async function initializeGapiClient() { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); gapiInited = true; checkAuthReady(); }
-        window.onload = async () => { initControls(); await fetchIndianHolidays(currentDate.getFullYear()); updateCalendarView(); if(typeof google !== 'undefined') gisLoaded(); };
+        window.onload = async () => { initControls(); await fetchIndianHolidays(currentDate.getFullYear()); updateCalendarView(); if(typeof google !== 'undefined' && !gisInited) gisLoaded(); };
 
         function gisLoaded() {
+            if (gisInited) return;
             tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error !== undefined) { localStorage.removeItem('minima_auto_sync'); resetSyncButton(); throw (resp); } localStorage.setItem('minima_auto_sync', 'true'); document.getElementById('btn-sync').textContent = "Signed In"; document.getElementById('btn-sync').disabled = true; document.getElementById('btn-push-google').disabled = false; await fetchGoogleEvents(); }, });
             gisInited = true; checkAuthReady();
         }
@@ -864,21 +1144,46 @@
         }
 
         function placeEventsOnGrid() {
-            document.querySelectorAll('.event, .holiday').forEach(e => e.remove());
-            holidaysList.forEach(holiday => { const cell = document.querySelector(`.day-cell[data-date="${holiday.date}"] .events-container`); if(cell) { const el = document.createElement('div'); el.className = 'holiday'; el.textContent = holiday.name; el.title = holiday.name; cell.appendChild(el); } });
-            eventsList.forEach(event => { const startStr = event.start.dateTime || event.start.date; if (!startStr) return; const dateKey = startStr.split('T')[0]; const cell = document.querySelector(`.day-cell[data-date="${dateKey}"] .events-container`); if (cell) { const el = document.createElement('div'); el.className = 'event'; let timeStr = event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}) + ' ' : ''; el.textContent = `${timeStr}${event.summary}`; el.title = el.textContent; cell.appendChild(el); } });
+            document.querySelectorAll('.day-cell').forEach(cell => cell.classList.remove('has-events'));
+            document.querySelectorAll('.event, .holiday, .note-preview').forEach(e => e.remove());
+            
+            holidaysList.forEach(holiday => { const cell = document.querySelector(`.day-cell[data-date="${holiday.date}"]`); if(cell) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'holiday'; el.textContent = holiday.name; el.title = holiday.name; container.appendChild(el); cell.classList.add('has-events'); } });
+            
+            eventsList.forEach(event => { const startStr = event.start.dateTime || event.start.date; if (!startStr) return; const dateKey = startStr.split('T')[0]; const cell = document.querySelector(`.day-cell[data-date="${dateKey}"]`); if (cell) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'event'; let timeStr = event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}) + ' ' : ''; el.textContent = `${timeStr}${event.summary}`; el.title = el.textContent; container.appendChild(el); cell.classList.add('has-events'); } });
+            
             localEvents.forEach(ev => {
                 const cal = myCalendars.find(c => c.id === (ev.calendarId || 'default')); if(!cal || !cal.visible) return;
                 let d1 = new Date(ev.start.split('T')[0]); let d2 = new Date(ev.end.split('T')[0]);
                 document.querySelectorAll('.day-cell').forEach(cell => {
                     let cDate = new Date(cell.getAttribute('data-date'));
-                    if (cDate >= d1 && cDate <= d2) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'event local-event'; el.style.backgroundColor = cal.color; let timeStr = (ev.start.includes('T') && cDate.getTime() === d1.getTime()) ? ev.start.split('T')[1] + ' ' : ''; el.textContent = `${timeStr}${ev.summary}`; container.appendChild(el); }
+                    if (cDate >= d1 && cDate <= d2) { const container = cell.querySelector('.events-container'); const el = document.createElement('div'); el.className = 'event local-event'; el.style.backgroundColor = cal.color; let timeStr = (ev.start.includes('T') && cDate.getTime() === d1.getTime()) ? ev.start.split('T')[1] + ' ' : ''; el.textContent = `${timeStr}${ev.summary}`; container.appendChild(el); cell.classList.add('has-events'); }
                 });
+            });
+
+            // Place Note Previews (purple text with distinctive color)
+            Object.keys(dayNotesStorage).forEach(dateKey => {
+                const cell = document.querySelector(`.day-cell[data-date="${dateKey}"]`);
+                if (cell) {
+                    const container = cell.querySelector('.events-container');
+                    const contentHtml = dayNotesStorage[dateKey];
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = contentHtml;
+                    if (tempDiv.innerText.trim() || tempDiv.querySelector('input[type="checkbox"]')) {
+                        const el = document.createElement('div');
+                        el.className = 'note-preview';
+                        el.innerHTML = contentHtml;
+                        
+                        // Disable checkboxes in preview so they are read-only
+                        el.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.disabled = true; cb.style.cursor = 'default'; });
+                        
+                        container.appendChild(el);
+                        cell.classList.add('has-events');
+                    }
+                }
             });
         }
     </script>
     <script>
-        // Register Service Worker for PWA / Offline capabilities
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
